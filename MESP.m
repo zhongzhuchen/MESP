@@ -38,7 +38,7 @@ classdef MESP
         Input:
         x       - current point for the DDFact problem
         s       - the size of subset we want to choose, also equals to the summation of all elements of x
-        
+        Gamma   - diagonal scaling paramter newC = Diag(Gamma)*C*Diag(Gamma)
         Output:
         fval    - objective value of DDFact at current point x
         dx      - the gradient of the obejctive function of DDFact at x
@@ -69,5 +69,23 @@ classdef MESP
         %}
         Knitro_DDFact_inline;
         end
+
+%         function [fval,x,info] = Knitro_DDFact_Diag(obj,x0,s,comp,Gamma)
+%         % calling knitro to solve the DDFact problem with diagonal scaling
+%         % parameter
+%         %{
+%         Input:
+%         s       - the size of subset we want to choose, also equals to the
+%                   summation of all elements of x0
+%         x0      - initial point
+%         comp    - indicate complementary bound
+%         Gamma   - diagonal scaling parameter
+%         Output:
+%         fval    - objective value of DDFact at optimal solution x
+%         x       - optimal solution x
+%         info    - struct containing necesssary information
+%         %}
+%         Knitro_DDFact_Diag_inline;
+%         end
     end
 end

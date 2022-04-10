@@ -1,4 +1,4 @@
-%% obtain class properties
+%% obtain class properties and assign values
 F=obj.F;
 Fsquare = obj.Fsquare;
 n = obj.size;
@@ -77,22 +77,6 @@ K2=K1.*(eigDual');
 dx=sum(K2.*K1,2);
 
 %% calculate dual bound and dual solutions by calling Knitro
-% [sort_dx,ind]=sort(dx,'descend');
-% % calculate dual variables
-% tau=sort_dx(s);
-% nu=zeros(n,1);
-% nu(ind(1:s))=sort_dx(1:s)-tau;
-% v=nu+tau-dx;
-% info.tau=tau;
-% info.dual_v=v;
-% info.dual_nu=nu;
-% % calculate dual gap
-% info.dualgap=sum(sort_dx(1:s))-s;
-% 
-% % calculate objective value
-% sort_eigDual=sort(eigDual);
-% fval=-sum(log(sort_eigDual(1:s)));
-% info.dualbound=fval+info.dualgap;
 % % cache for mixing
 % info.cache1=-s;
 % info.cache2=sum(dx)-s;
