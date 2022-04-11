@@ -1,7 +1,7 @@
 classdef MESP
     properties
         C double
-        size int16
+        size double
         A double
         b double
         F double
@@ -81,7 +81,11 @@ classdef MESP
         Knitro_DDFact_inline;
         end
 
-        function 
-
+        function [optGamma,info]=BFGS_DDFact_Gamma(obj,s,GammaInit)
+        % BFGS method for optimizaing symmetric diagonal scaling parameter
+        % of DDFact objective function (factorization bound)
+        BFGS_DDFact_Gamma_inline;
+        end
+        
     end
 end

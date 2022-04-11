@@ -81,12 +81,7 @@ if obj.comp==0
     end
 else
     % compensate the dualbound
-    info.dualbound = info.dualbound+obj.ldetC;
-    info.knitro_fval = info.knitro_fval+obj.ldetC;
-    fval = fval+obj.ldetC;
-    info.fval = info.fval+obj.ldetC;
-
-    info.integrality_gap=info.dualbound-obj.obtain_lb(n-s);
+    info.integrality_gap=info.dualbound+obj.ldetC-obj.obtain_lb(n-s);
     if info.integrality_gap>1e-6
         info.solved=0;
     else
