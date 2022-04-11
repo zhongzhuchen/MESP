@@ -1,6 +1,11 @@
 %% obtain class properties and assign values
-F=obj.F;
+% scale F, Fsquare with Gamma
+n=obj.size;
+F=diag(sqrt(Gamma))*obj.F;
 Fsquare = obj.Fsquare;
+for i=1:n
+    Fsquare(:,:,i)=Gamma(i)*Fsquare(:,:,i);
+end
 n = obj.size;
 A_data=obj.A;
 b_data=obj.b;
@@ -37,12 +42,6 @@ if mid_val<=0
     error('Something went wrong with calculating X or C might be a zero matrix.');
 end
 
-if abs(sort_D(k+1)-mid_val)<1e-6
-    info.prob_nonsmooth=1;
-else
-    info.prob_nonsmooth=0;
-end
-
 % construct the eigenvalue for the feasible solution to the dual problem, i.e., DFact
 eigDual=zeros(d,1);
 % for i=1:d
@@ -74,8 +73,8 @@ end
 % vectorized code of the above commented code
 K1=F*U;
 K2=K1.*(eigDual');
-dx=sum(K2.*K1,2);
-
+dx1=sum(K2.*K1,2);
+dx=dx1-log(Gamma);
 %% calculate dual bound and dual solutions by calling Knitro
 % % cache for mixing
 % info.cache1=-s;
@@ -94,8 +93,9 @@ info.dual_upsilon = xlp(1:n);
 info.dual_nu = xlp((n+1):2*n);
 info.dual_pi =  xlp((2*n+1):(2*n+m));
 info.dual_tau = xlp(end);
-info.dualgap=dualgap-s;
+info.dualgap=dualgap-s+sum(x.*log(Gamma));
 % fval=-sum(log(eigDual(ind1)));
 sort_eigDual=sort(eigDual);
-fval=-sum(log(sort_eigDual(1:s)));
+fval=-sum(log(sort_eigDual(1:s)))-sum(x.*log(Gamma));
+info.fval=fval;
 info.dualbound=fval+info.dualgap;

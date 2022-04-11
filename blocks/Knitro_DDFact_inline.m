@@ -1,7 +1,5 @@
 %% obtain class properties
 C=obj.C;
-F=obj.F;
-Fsquare = obj.Fsquare;
 n = obj.size;
 A_data=obj.A;
 b_data=obj.b;
@@ -9,7 +7,7 @@ b_data=obj.b;
 info=struct;
 
 %% calling knitro
-obj_fn =  @(x) obj.DDFact_obj_knitro(x,s);
+obj_fn =  @(x) obj.DDFact_obj_knitro(x,s,Gamma);
 lb=zeros(n,1);
 ub=ones(n,1);
 Aeq=ones(1,n);
@@ -27,7 +25,7 @@ options = knitro_options('algorithm', 3, 'convex', 1, 'derivcheck', 0, 'outlev',
                          'bar_maxcrossit', 10);
 TStart=tic;
 tStart=cputime;
-[x,~,exitflag,output,lambda,~] = knitro_nlp(obj_fn,x0,A,b,Aeq,beq,lb,ub,[],[],options);  
+[x,knitro_fval,exitflag,output,lambda,~] = knitro_nlp(obj_fn,x0,A,b,Aeq,beq,lb,ub,[],[],options);  
 time=toc(TStart);
 tEnd=cputime-tStart;
 
@@ -35,7 +33,8 @@ tEnd=cputime-tStart;
 % record important information
 info.exitflag=exitflag;
 info.x=x; % optimal solution
-[fval,dx,finalinfo] = obj.DDFact_obj(x,s);
+info.knitro_fval = -knitro_fval;
+[fval,dx,finalinfo] = obj.DDFact_obj(x,s,Gamma);
 info.fval=fval;
 info.continuous_dualgap=finalinfo.dualgap;
 info.dualbound=finalinfo.dualbound;
@@ -62,7 +61,7 @@ info.fixto0list=[];
 info.fixnum_to1=0;
 info.fixto1list=[];
 
-if comp==0
+if obj.comp==0
     info.integrality_gap=info.dualbound-obj.obtain_lb(s);
     if info.integrality_gap>1e-6
         info.solved=0;
@@ -81,7 +80,13 @@ if comp==0
         end
     end
 else
-    info.integrality_gap=info.dualbound+log(det(C))-obj.obtain_lb(n-s);
+    % compensate the dualbound
+    info.dualbound = info.dualbound+obj.ldetC;
+    info.knitro_fval = info.knitro_fval+obj.ldetC;
+    fval = fval+obj.ldetC;
+    info.fval = info.fval+obj.ldetC;
+
+    info.integrality_gap=info.dualbound-obj.obtain_lb(n-s);
     if info.integrality_gap>1e-6
         info.solved=0;
     else
