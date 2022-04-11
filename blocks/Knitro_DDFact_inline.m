@@ -45,7 +45,6 @@ info.dual_tau=finalinfo.dual_tau;
 info.ub_lambda=lambda.upper;
 info.lb_lambda=lambda.lower;
 
-info.exitflag=exitflag;
 info.time=time;
 info.cputime=tEnd;
 info.iterations=output.iterations;

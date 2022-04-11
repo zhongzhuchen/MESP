@@ -8,6 +8,7 @@ classdef MESP
         Fsquare double
         comp double
         ldetC double
+        scaleC double % buffer variable
     end
 
     %% intialization function
@@ -37,7 +38,7 @@ classdef MESP
         end
     end
 
-    %% methods block for factorization
+    %% methods block for factorization bound
     methods
         function [fval,dx,info] = DDFact_obj(obj,x,s,Gamma)
         % This function calculate the objective value, gradient, and info of DDFact for given data
@@ -87,5 +88,67 @@ classdef MESP
         BFGS_DDFact_Gamma_inline;
         end
         
+    end
+    %% methods for the linx bound
+    methods
+        function [fval,dx,info] = Linx_obj(obj,x,s,Gamma)
+        % This function calculate the objective value and gradient of the objective function of linx
+        %{
+        Input: 
+        x       - current point for linx bound
+        s       - the size of subset we want to choose, also equals to the summation of all elements of x
+        Gamma   - row diagonal scaling parameter
+        
+        Output:
+        fval    - the linx bound at current point x
+        dx      - the gradient of obejctive function of Linx at x
+        info    - struct containing necesssary information
+        %}
+        Linx_obj_inline;
+        end
+        
+        function [fval,dx] = Linx_obj_knitro(obj,x,s,Gamma)
+            % create a callback function for Knitro specifying objective value and gradient 
+            [fval,dx,~] = obj.Linx_obj(x,s,Gamma);
+            fval=-fval;
+            dx=-dx;
+        end
+
+        function [H]= hessfun(obj,x,lambda)
+            % create a callback function for Knitro specifying Hessian
+            scaleC=obj.scaleC;
+            n=obj.size;
+            F=scaleC*diag(x)*scaleC'+eye(n)-diag(x);
+            F=F+F';
+            Finv=inv(F);
+            hess1=-Finv.^2;
+            hess21=Finv*scaleC; 
+            hess22=hess21.^2;
+            hess2=hess22+hess22';
+            hess31=scaleC'*hess21;
+            hess3=-hess31.^2;
+            H=-(hess3+hess2+hess1);
+            H=(H+H');
+        end
+
+
+        function [fval,x,info] = Knitro_Linx(obj,x0,s,Gamma)
+        % calling knitro to solve the DDFact problem
+        %{
+        Input:
+        s       - the size of subset we want to choose, also equals to the
+                  summation of all elements of x0
+        x0      - initial point
+        Gamma   - row diagonal scaling paramter newC = Diag(Gamma)*C
+        comp    - indicate complementary bound, comp=1 means we need to
+                  compare with the lower bound associated with n-s
+
+        Output:
+        fval    - objective value of DDFact at optimal solution x
+        x       - optimal solution x
+        info    - struct containing necesssary information
+        %}
+        Knitro_Linx_inline;
+        end
     end
 end
