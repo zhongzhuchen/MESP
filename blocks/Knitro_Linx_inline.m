@@ -1,10 +1,10 @@
 %% obtain class properties
-obj.scaleC=diag(Gamma)*obj.C;
-n = obj.size;
 A_data=obj.A;
 b_data=obj.b;
 [m,~] = size(obj.A);
 info=struct;
+scaleC=diag(Gamma)*obj.C;
+n = obj.size;
 
 %% calling knitro
 obj_fn =  @(x) obj.Linx_obj_knitro(x,s,Gamma);
@@ -22,7 +22,7 @@ end
 TStart=tic;
 tStart=cputime;
 
-extendedFeatures.HessFcn = @ obj.hessfun;
+extendedFeatures.HessFcn = @(x,lambda) Linx_hessfun(x,lambda,scaleC);
 options = knitro_options('algorithm', 3, 'convex', 1, 'derivcheck', 0, 'outlev', 0 , 'gradopt', 1, ...
                          'hessopt', 1, 'maxit', 1000, 'xtol', 1e-15, 'derivcheck_tol',1e-5,...
                          'feastol', 1e-10, 'opttol', 1e-10, 'bar_feasible',1,...
@@ -56,7 +56,7 @@ info.constrviolation=output.constrviolation;
 info.algorithm=output.algorithm;
 
 %% fixing variables
-info.integrality_gap=info.dualbound-obtain_lb(s);
+info.integrality_gap=info.dualbound-obj.obtain_lb(s);
 % number of fixing variables
 info.fixnum=0;
 info.fixnum_to0=0;
@@ -70,7 +70,7 @@ else
     info.solved=1;
 end
 for i=1:n
-    if intgap<info.dual_v(i)-1e-10
+    if intgap<info.dual_upsilon(i)-1e-10
         info.fixnum=info.fixnum+1;
         info.fixnum_to0=info.fixnum_to0+1;
         info.fixto0list(end+1)=i;

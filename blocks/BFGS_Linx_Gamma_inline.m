@@ -4,7 +4,6 @@ n = obj.size;
 info=struct;
 
 t1=tic;
-%% setting different numbers of iterations for different problem size
 if n>200
     TOL= 10^(-6);
     Numiterations=20; 
@@ -28,11 +27,8 @@ else
     [~,heurval]=heur(C,n,s);        % HEURSITIC ON ORIGINAL
 end
 
-% heurval=-Inf;
-F = obj.F;
-Fsquare = obj.Fsquare;
 x0=s/n*ones(n,1);
-%% Initializes Gamma and hyper parameter
+% Initialize Gamma
 Gamma=GammaInit;
 
 difgap=1;
@@ -42,15 +38,21 @@ c1=1e-4;
 c2=0.9;
 
 %% calculate the gradient of fact bound with respect to Gamma
-[bound,x,~]= obj.Knitro_DDFact(x0,s,Gamma);
-
-Fx=diag(sqrt(x))*F;
-Fsquarex=Fsquare.*reshape(x,1,1,n);
-
-[~,dGamma,~] = DDFact_obj_auxiliary(Gamma,s,Fx,Fsquarex);
-
+[bound,x,~]= obj.Knitro_Linx(x0,s,Gamma);
+scaleC=diag(Gamma)*C;
+AUX = scaleC*diag(x)*scaleC';
+B = - diag(x) + eye(n);
+%Compute F(gamma,x)
+F= AUX+B;
+F=(F+F')/2; % force symmetry
+%Compute inv(F(gamma,x))
+[U,D]=eig(F);
+lam=diag(D);
+Finv=U*diag(1./lam)*U';
+%Compute the residual res
 gap=bound-heurval;
-grad=Gamma.*dGamma-x;
+
+grad=diag(Finv*AUX)-x;
 res= norm(grad);
 
 allGamma=Gamma;
@@ -58,7 +60,6 @@ allres=res;
 allbound=bound;
 
 H=eye(n); % initialize the inverse Hessian approximation
-sprintf('k: %d, gap: %f, abs(res): %f, difgap: %f',k, gap, abs(res), difgap)
 
 %% we use the optimal solution of every last linx bound as the initial point 
 % for solving the next linx bound, trick for accelarating optimization
@@ -97,13 +98,18 @@ while(k<=Numiterations && gap > TOL && abs(res) > TOL && difgap > TOL)
     %check if alfa=1 satisfies the Strong Wolfe Conditions
     alfa=1;
     nGamma=Gamma.*exp(alfa*dir);
-    [nbound,nx,~]= obj.Knitro_DDFact(nx,s,nGamma);
-    nFx=diag(sqrt(nx))*F;
-    nFsquarex=Fsquare.*reshape(nx,1,1,n);
-    [~,dnGamma,~] = DDFact_obj_auxiliary(nGamma,s,nFx,nFsquarex);
-
-    ngrad=nGamma.*dnGamma-nx;
+    [nbound,nx,~]= obj.Knitro_Linx(nx,s,nGamma);
+    scaleC=diag(nGamma)*C;
+    nAUX = scaleC*diag(nx)*scaleC';
+    nB = - diag(nx) + eye(n);
+    nF=nAUX+nB;
+    nF=(nF+nF')/2; % force symmetry
+    [U,D]=eig(nF);
+    lam=diag(D);
+    nFinv=U*diag(1./lam)*U';
+    ngrad=diag(nFinv*nAUX)-nx;
     nres= norm(ngrad);
+
     [U,D]=eig(H);
     % sprintf("nbound:%f, nres:%f, Hessmineig:%f, min(nGamma):%f", nbound, nres,min(diag(D)),min(nGamma))
 
@@ -120,12 +126,17 @@ while(k<=Numiterations && gap > TOL && abs(res) > TOL && difgap > TOL)
     while judge==0
         alfa=(a+b)/2;
         nGamma=Gamma.*exp(alfa*dir);
-        [nbound,nx,~]= obj.Knitro_DDFact(nx,s,nGamma);
-        nFx=diag(sqrt(nx))*F;
-        nFsquarex=Fsquare.*reshape(nx,1,1,n);
-        [~,dnGamma,~] = DDFact_obj_auxiliary(nGamma,s,nFx,nFsquarex);
-        ngrad=nGamma.*dnGamma-nx;
-        nres= norm(ngrad);
+        [nbound,nx,~]= obj.Knitro_Linx(nx,s,nGamma);
+        scaleC=diag(nGamma)*C;
+        nAUX = scaleC*diag(nx)*scaleC';
+        nB = - diag(nx) + eye(n);
+        nF=nAUX+nB;
+        nF=(nF+nF')/2; % force symmetry
+        [U,D]=eig(nF);
+        lam=diag(D);
+        nFinv=U*diag(1./lam)*U';
+        ngrad=diag(nFinv*nAUX)-nx;
+        nres= norm(ngrad); 
         if nbound-bound>c1*alfa*dir'*grad
             b=alfa;
         elseif abs(dir'*ngrad)>c2*abs(dir'*grad)
@@ -142,6 +153,9 @@ while(k<=Numiterations && gap > TOL && abs(res) > TOL && difgap > TOL)
     deltag=ngrad-grad;
     grad=ngrad;
     res=nres;
+    Finv=nFinv;
+    B=nB;
+    AUX=nAUX;
     x=nx;
     bound=nbound;
     gap=bound-heurval;
@@ -149,8 +163,6 @@ while(k<=Numiterations && gap > TOL && abs(res) > TOL && difgap > TOL)
     allres=[allres,res];
     allbound=[allbound,bound];
     k=k+1; 
-
-    sprintf('k: %d, gap: %f, abs(res): %f, difgap: %f',k, gap, abs(res), difgap)
 end
 info.iterations=k-1;
 info.gap=gap;
@@ -158,7 +170,7 @@ info.absres=abs(res);
 info.difgap=difgap;
 [optbound,optiteration]=min(allbound);
 optGamma=allGamma(:,optiteration);
-[bound1,~,~]= obj.Knitro_DDFact(x0,s,ones(n,1));
+[bound1,~,~]= obj.Knitro_Linx(x0,s,ones(n,1));
 if optbound>bound1
     optbound=bound1;
     optGamma=ones(n,1);

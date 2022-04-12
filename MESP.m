@@ -114,24 +114,6 @@ classdef MESP
             dx=-dx;
         end
 
-        function [H]= hessfun(obj,x,lambda)
-            % create a callback function for Knitro specifying Hessian
-            scaleC=obj.scaleC;
-            n=obj.size;
-            F=scaleC*diag(x)*scaleC'+eye(n)-diag(x);
-            F=F+F';
-            Finv=inv(F);
-            hess1=-Finv.^2;
-            hess21=Finv*scaleC; 
-            hess22=hess21.^2;
-            hess2=hess22+hess22';
-            hess31=scaleC'*hess21;
-            hess3=-hess31.^2;
-            H=-(hess3+hess2+hess1);
-            H=(H+H');
-        end
-
-
         function [fval,x,info] = Knitro_Linx(obj,x0,s,Gamma)
         % calling knitro to solve the DDFact problem
         %{
@@ -149,6 +131,12 @@ classdef MESP
         info    - struct containing necesssary information
         %}
         Knitro_Linx_inline;
+        end
+
+        function [optGamma,info]=BFGS_Linx_Gamma(obj,s,GammaInit)
+        % BFGS method for optimizaing row diagonal scaling parameter
+        % of Linx objective function (factorization bound)
+        BFGS_Linx_Gamma_inline;
         end
     end
 end
