@@ -1,11 +1,14 @@
 classdef MESP
     properties
         C double
+        C_comp double %inv(C)
         size double
         A double
         b double
         F double
         Fsquare double
+        F_comp double
+        Fsquare_comp double
         comp double
         ldetC double
         scaleC double % buffer variable
@@ -18,12 +21,14 @@ classdef MESP
                 error("Please input valid values.");
             end
             obj.C=C;
+            obj.C_comp=inv(C);
             obj.size=length(C);
             obj.A = A;
             obj.b = b;
             obj.comp=comp;
             if comp==0
                 [obj.F,obj.Fsquare,obj.ldetC] = gen_data(C,0);
+                [obj.F_comp,obj.Fsquare_comp,obj.ldetC] = gen_data(C,1);
             else
                 [obj.F,obj.Fsquare,obj.ldetC] = gen_data(C,1);
             end
@@ -71,8 +76,6 @@ classdef MESP
                   summation of all elements of x0
         x0      - initial point
         Gamma   - diagonal scaling paramter newC = Diag(Gamma)*C*Diag(Gamma)
-        comp    - indicate complementary bound, comp=1 means we need to
-                  compare with the lower bound associated with n-s
 
         Output:
         fval    - objective value of DDFact at optimal solution x
@@ -87,8 +90,58 @@ classdef MESP
         % of DDFact objective function (factorization bound)
         BFGS_DDFact_Gamma_inline;
         end
-        
     end
+    
+    %% methods for the complementaty factorization bound
+    methods
+        function [fval,dx,info] = DDFact_comp_obj(obj,x,s,Gamma)
+        % This function calculate the objective value, gradient, and info of comp DDFact for given data
+        %{
+        Input:
+        x       - current point for the DDFact problem
+        s       - the size of subset we want to choose, also equals to the summation of all elements of x
+        Gamma   - diagonal scaling paramter newC = Diag(Gamma)*C*Diag(Gamma)
+
+        Output:
+        fval    - objective value of DDFact at current point x
+        dx      - the gradient of the obejctive function of DDFact at x
+        info    - struct containing necesssary information
+        %}
+        DDFact_comp_obj_inline;
+        end
+        
+        function [fval,dx] = DDFact_comp_obj_knitro(obj,x,s,Gamma)
+        % create a callback function for Knitro specifying objective value and gradient 
+        [fval,dx,~] = obj.DDFact_comp_obj(x,s,Gamma);
+        fval=-fval;
+        dx=-dx;
+        end
+
+        function [fval,x,info] = Knitro_DDFact_comp(obj,x0,s,Gamma)
+        % calling knitro to solve the complementary DDFact problem
+        %{
+        Input:
+        s       - the size of subset we want to choose, also equals to the
+                  summation of all elements of x0
+        x0      - initial point
+        Gamma   - diagonal scaling paramter newC = Diag(Gamma)*C*Diag(Gamma)
+
+        Output:
+        fval    - objective value of DDFact at optimal solution x
+        x       - optimal solution x
+        info    - struct containing necesssary information
+        %}
+        Knitro_DDFact_comp_inline;
+        end
+
+        function [optGamma,info]=BFGS_DDFact_comp_Gamma(obj,s,GammaInit)
+        % BFGS method for optimizaing symmetric diagonal scaling parameter
+        % of DDFact objective function (factorization bound)
+        BFGS_DDFact_comp_Gamma_inline;
+        end
+    end
+    
+
     %% methods for the linx bound with row scaling
     methods
         function [fval,dx,info] = Linx_obj(obj,x,s,Gamma)

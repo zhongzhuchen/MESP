@@ -1,11 +1,14 @@
 classdef MESP
     properties
         C double
+        C_comp double %inv(C)
         size double
         A double
         b double
         F double
         Fsquare double
+        F_comp double
+        Fsquare_comp double
         comp double
         ldetC double
         scaleC double % buffer variable
@@ -18,6 +21,7 @@ classdef MESP
                 error("Please input valid values.");
             end
             obj.C=C;
+            obj.C_comp=inv(C);
             obj.size=length(C);
             obj.A = A;
             obj.b = b;
@@ -26,6 +30,7 @@ classdef MESP
                 [obj.F,obj.Fsquare,obj.ldetC] = gen_data(C,0);
             else
                 [obj.F,obj.Fsquare,obj.ldetC] = gen_data(C,1);
+                [obj.F_comp,obj.Fsquare_comp,obj.ldetC] = gen_data(C,1);
             end
         end
     end
@@ -71,8 +76,6 @@ classdef MESP
                   summation of all elements of x0
         x0      - initial point
         Gamma   - diagonal scaling paramter newC = Diag(Gamma)*C*Diag(Gamma)
-        comp    - indicate complementary bound, comp=1 means we need to
-                  compare with the lower bound associated with n-s
 
         Output:
         fval    - objective value of DDFact at optimal solution x
@@ -88,7 +91,27 @@ classdef MESP
         BFGS_DDFact_Gamma_inline;
         end
         
+        function [fval,x,info] = Knitro_DDFact_comp(obj,x0,s,Gamma)
+        % calling knitro to solve the complementary DDFact problem
+        %{
+        Input:
+        s       - the size of subset we want to choose, also equals to the
+                  summation of all elements of x0
+        x0      - initial point
+        Gamma   - diagonal scaling paramter newC = Diag(Gamma)*C*Diag(Gamma)
+
+        Output:
+        fval    - objective value of DDFact at optimal solution x
+        x       - optimal solution x
+        info    - struct containing necesssary information
+        %}
+        Knitro_DDFact_comp_inline;
+        end
+
     end
+    
+    %% methods for the complement
+
     %% methods for the linx bound with row scaling
     methods
         function [fval,dx,info] = Linx_obj(obj,x,s,Gamma)
@@ -138,11 +161,7 @@ classdef MESP
         % of Linx objective function (factorization bound)
         BFGS_Linx_Gamma_inline;
         end
-
-        function [optGamma,info]=BFGS_Linx_gamma(obj,s)
-        % BFGS method for optimizaing scalar scaling parameter
-        % of Linx objective function (factorization bound)
-        Linx_Gamma_inline;
-        end
     end
+
+    %% mixing part
 end
