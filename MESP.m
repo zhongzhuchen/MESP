@@ -9,14 +9,13 @@ classdef MESP
         Fsquare double
         F_comp double
         Fsquare_comp double
-        comp double
         ldetC double
         scaleC double % buffer variable
     end
 
     %% intialization function
     methods  
-        function obj = MESP(C, A, b, comp)
+        function obj = MESP(C, A, b)
             if nargin < 0
                 error("Please input valid values.");
             end
@@ -25,13 +24,8 @@ classdef MESP
             obj.size=length(C);
             obj.A = A;
             obj.b = b;
-            obj.comp=comp;
-            if comp==0
-                [obj.F,obj.Fsquare,obj.ldetC] = gen_data(C,0);
-                [obj.F_comp,obj.Fsquare_comp,obj.ldetC] = gen_data(C,1);
-            else
-                [obj.F,obj.Fsquare,obj.ldetC] = gen_data(C,1);
-            end
+            [obj.F,obj.Fsquare,obj.ldetC] = gen_data(C,0);
+            [obj.F_comp,obj.Fsquare_comp,~] = gen_data(C,1);
         end
     end
 

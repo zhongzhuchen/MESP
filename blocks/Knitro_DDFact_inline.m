@@ -60,41 +60,20 @@ info.fixto0list=[];
 info.fixnum_to1=0;
 info.fixto1list=[];
 
-if obj.comp==0
-    info.integrality_gap=info.dualbound-obj.obtain_lb(s);
-    if info.integrality_gap>1e-6
-        info.solved=0;
-    else
-        info.solved=1;
-    end
-    for i=1:n
-        if info.integrality_gap<info.dual_upsilon(i)-1e-10
-            info.fixnum=info.fixnum+1;
-            info.fixnum_to0=info.fixnum_to0+1;
-            info.fixto0list(end+1)=i;
-        elseif info.integrality_gap<info.dual_nu(i)-1e-10
-            info.fixnum=info.fixnum+1;
-            info.fixnum_to1=info.fixnum_to1+1;
-            info.fixto1list(end+1)=i;
-        end
-    end
+info.integrality_gap=info.dualbound-obj.obtain_lb(s);
+if info.integrality_gap>1e-6
+    info.solved=0;
 else
-    % compensate the dualbound
-    info.integrality_gap=info.dualbound+obj.ldetC-obj.obtain_lb(n-s);
-    if info.integrality_gap>1e-6
-        info.solved=0;
-    else
-        info.solved=1;
-    end
-    for i=1:n
-        if info.integrality_gap<info.dual_upsilon(i)-1e-10
-            info.fixnum=info.fixnum+1;
-            info.fixnum_to1=info.fixnum_to1+1;
-            info.fixto1list(end+1)=i;
-        elseif info.integrality_gap<info.dual_nu(i)-1e-10
-            info.fixnum=info.fixnum+1;
-            info.fixnum_to0=info.fixnum_to0+1;
-            info.fixto0list(end+1)=i;
-        end
+    info.solved=1;
+end
+for i=1:n
+    if info.integrality_gap<info.dual_upsilon(i)-1e-10
+        info.fixnum=info.fixnum+1;
+        info.fixnum_to0=info.fixnum_to0+1;
+        info.fixto0list(end+1)=i;
+    elseif info.integrality_gap<info.dual_nu(i)-1e-10
+        info.fixnum=info.fixnum+1;
+        info.fixnum_to1=info.fixnum_to1+1;
+        info.fixto1list(end+1)=i;
     end
 end
