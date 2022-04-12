@@ -89,7 +89,7 @@ classdef MESP
         end
         
     end
-    %% methods for the linx bound
+    %% methods for the linx bound with row scaling
     methods
         function [fval,dx,info] = Linx_obj(obj,x,s,Gamma)
         % This function calculate the objective value and gradient of the objective function of linx
@@ -139,4 +139,6 @@ classdef MESP
         BFGS_Linx_Gamma_inline;
         end
     end
+
+    %% mixing part
 end
