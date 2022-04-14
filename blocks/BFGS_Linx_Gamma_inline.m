@@ -91,10 +91,13 @@ while(k<=Numiterations && gap > TOL && abs(res) > TOL && difgap > TOL)
     %Compute the search direction for Newton's method (dir=-res/Mat)
     dir=-H*grad;
     edir=exp(dir);
-    if norm(edir)==Inf || isnan(norm(edir))
-        edir=edir/norm(edir)*1e10;
+    if norm(edir)==Inf || norm(edir)==0 || isnan(norm(edir))
+        if norm(dir)==Inf || isnan(norm(dir))
+            dir=-grad;
+        else
+            dir=dir/norm(dir)*10;
+        end   
     end
-    dir=log(edir);
     %check if alfa=1 satisfies the Strong Wolfe Conditions
     alfa=1;
     nGamma=Gamma.*exp(alfa*dir);
