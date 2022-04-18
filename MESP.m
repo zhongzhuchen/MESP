@@ -212,7 +212,6 @@ classdef MESP
         % mixing Linx and DDFact bound (with optimal mixing parameter)
         %{
         Input:
-        x       - current point for the mix problem
         s       - the size of subset we want to choose, also equals to the summation of all elements of x
         Gamma1  - diagonal scaling parameter for DDFact
         Gamma2  - row scaling parameter for Linx
@@ -251,7 +250,6 @@ classdef MESP
         % mixing Linx and DDFact comp bound (with optimal mixing parameter)
         %{
         Input:
-        x       - current point for the mix problem
         s       - the size of subset we want to choose, also equals to the summation of all elements of x
         Gamma1  - diagonal scaling parameter for DDFact comp
         Gamma2  - row scaling parameter for Linx
@@ -290,7 +288,6 @@ classdef MESP
         % mixing DDFact and DDFact comp bound (with optimal mixing parameter)
         %{
         Input:
-        x       - current point for the mix problem
         s       - the size of subset we want to choose, also equals to the summation of all elements of x
         Gamma1  - symmtric diagonal scaling parameter for DDFact
         Gamma2  - symmtric diagonal scaling parameter for DDFact comp
@@ -303,4 +300,23 @@ classdef MESP
         mix_DDFact_DDFact_comp_inline;
         end
     end 
+
+    %% alternating optimizing mixing parameter and scaling parameter for mixing bound
+    methods
+        function [fval, x, info] = mix_alteritr(s, mix_pattern)
+        %{
+        Input:
+        s       - the size of subset we want to choose, also equals to the summation of all elements of x
+        mix_pattern
+                - "DDFact_Linx"
+                - "DDFact_comp_Linx"
+                - "DDFact_DDFact_comp"
+        Output:
+        fval    - objective value at current point x
+        dx      - the gradient of the obejctive function at x
+        info    - struct containing necesssary information
+        %}
+        mix_alteritr_inline;
+        end
+    end
 end
