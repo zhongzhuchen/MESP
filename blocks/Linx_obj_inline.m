@@ -14,7 +14,7 @@ F=0.5*(F+F');
 
 if flag>0
     warning("F(x) is not positive definite when calculating linx bound objective function.");
-    obj=-Inf;
+    fval=-Inf;
     dx=zeros(n,1);
     info.dual_upsilon=nan*ones(n,1);
     info.dual_nu=nan*ones(n,1);
@@ -45,17 +45,8 @@ else
     info.dualgap=dualgap+0.5*sum(dx2)-n/2+sum(x.*log(Gamma));
     info.fval=fval;
     info.dualbound=fval+info.dualgap;
-
-%     [sort_dx,ind]=sort(dx,'descend');
-%     tau=sort_dx(s);
-%     nu=zeros(n,1);
-%     nu(ind(1:s))=sort_dx(1:s)-tau;
-%     v=nu+tau-dx;
-%     info.dual_v=v;
-%     info.dual_nu=nu;
-%     info.dualgap=1/2*sum(dx2)+sum(nu)+tau*s-n/2+sum(x.*log(Gamma));
-%     info.dualbound=obj+info.dualgap;
-%     % cache for mixing
-%     info.cache1=1/2*sum(dx2)-n/2+sum(x.*log(Gamma));
+    % cache for mixing
+    info.cache = 0.5*sum(dx2)-n/2;
 end
+
 

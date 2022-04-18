@@ -105,3 +105,4 @@ fval=fval+ldetC;
 info.fval=fval;
 dx = -dx;
 info.dualbound=fval+info.dualgap;
+info.cache=sum(dx1)-s;

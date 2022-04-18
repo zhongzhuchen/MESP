@@ -35,6 +35,7 @@ info.exitflag=exitflag;
 info.x=x; % optimal solution
 info.knitro_fval = -knitro_fval;
 [fval,dx,finalinfo] = obj.DDFact_comp_obj(x,s,Gamma);
+info.dx=dx;
 info.fval=fval;
 info.continuous_dualgap=finalinfo.dualgap;
 info.dualbound=finalinfo.dualbound;

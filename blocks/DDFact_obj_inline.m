@@ -99,3 +99,6 @@ sort_eigDual=sort(eigDual);
 fval=-sum(log(sort_eigDual(1:s)))-sum(x.*log(Gamma));
 info.fval=fval;
 info.dualbound=fval+info.dualgap;
+
+% cache for mixing
+info.cache = -s;
