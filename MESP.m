@@ -195,15 +195,15 @@ classdef MESP
         % of mixing Linx&DDFact bound
         %{
         Input:
-        x       - current point for the DDFact problem
+        x       - current point for the mix problem
         s       - the size of subset we want to choose, also equals to the summation of all elements of x
-        Gamma1  - row diagonal scaling paramter for DDFact
-        Gamma2  - symmetric diagonal scaling paramter for Linx
+        Gamma1  - symmetric diagonal scaling paramter for DDFact
+        Gamma2  - row diagonal scaling paramter for Linx
         alpha   - mixing parameter
     
         Output:
-        fval    - objective value of DDFact at current point x
-        dx      - the gradient of the obejctive function of DDFact at x
+        fval    - objective value at current point x
+        dx      - the gradient of the obejctive function at x
         %}
         mix_DDFact_Linx_obj_knitro_inline;
         end
@@ -212,14 +212,14 @@ classdef MESP
         % mixing Linx and DDFact bound (with optimal mixing parameter)
         %{
         Input:
-        x       - current point for the DDFact problem
+        x       - current point for the mix problem
         s       - the size of subset we want to choose, also equals to the summation of all elements of x
-        Gamma1  - diagonal scaling parameter for DDFact comp
-        Gamma2  - diagonal scaling parameter for Linx
+        Gamma1  - diagonal scaling parameter for DDFact
+        Gamma2  - row scaling parameter for Linx
 
         Output:
-        fval    - objective value of DDFact at current point x
-        dx      - the gradient of the obejctive function of DDFact at x
+        fval    - objective value at current point x
+        dx      - the gradient of the obejctive function at x
         info    - struct containing necesssary information
         %}
         mix_DDFact_Linx_inline;
@@ -234,15 +234,15 @@ classdef MESP
         % of mixing Linx&DDFact comp bound
         %{
         Input:
-        x       - current point for the DDFact problem
+        x       - current point for the mix problem
         s       - the size of subset we want to choose, also equals to the summation of all elements of x
-        Gamma1  - row diagonal scaling paramter for DDFact comp
-        Gamma2  - symmetric diagonal scaling paramter for Linx
+        Gamma1  - symmetric diagonal scaling paramter for DDFact comp
+        Gamma2  - row diagonal scaling paramter for Linx
         alpha   - mixing parameter
     
         Output:
-        fval    - objective value of DDFact at current point x
-        dx      - the gradient of the obejctive function of DDFact at x
+        fval    - objective value at current point x
+        dx      - the gradient of the obejctive function at x
         %}
         mix_DDFact_comp_Linx_obj_knitro_inline;
         end
@@ -251,17 +251,56 @@ classdef MESP
         % mixing Linx and DDFact comp bound (with optimal mixing parameter)
         %{
         Input:
-        x       - current point for the DDFact comp problem
+        x       - current point for the mix problem
         s       - the size of subset we want to choose, also equals to the summation of all elements of x
         Gamma1  - diagonal scaling parameter for DDFact comp
-        Gamma2  - diagonal scaling parameter for Linx
+        Gamma2  - row scaling parameter for Linx
 
         Output:
-        fval    - objective value of DDFact at current point x
-        dx      - the gradient of the obejctive function of DDFact at x
+        fval    - objective value at current point x
+        dx      - the gradient of the obejctive function at x
         info    - struct containing necesssary information
         %}
         mix_DDFact_comp_Linx_inline;
         end
     end
+
+    %% mixing DDFact and DDFact comp
+    methods
+        function [fval,dx] = mix_DDFact_DDFact_comp_obj_knitro(obj,x,s,Gamma1,Gamma2,alpha)
+        % create a callback function for Knitro specifying objective value and gradient 
+        % This function calculate the objective value, gradient, and info
+        % of mixing DDFact&DDFact comp bound
+        %{
+        Input:
+        x       - current point for the mix problem
+        s       - the size of subset we want to choose, also equals to the summation of all elements of x
+        Gamma1  - symmtric diagonal scaling paramter for DDFact
+        Gamma2  - symmtric diagonal scaling paramter for DDFact comp
+        alpha   - mixing parameter
+    
+        Output:
+        fval    - objective value at current point x
+        dx      - the gradient of the obejctive function at x
+        %}
+        mix_DDFact_DDFact_comp_obj_knitro_inline;
+        end
+
+        function [fval,dx,info] = mix_DDFact_DDFact_comp(obj,s,Gamma1,Gamma2)
+        % mixing DDFact and DDFact comp bound (with optimal mixing parameter)
+        %{
+        Input:
+        x       - current point for the mix problem
+        s       - the size of subset we want to choose, also equals to the summation of all elements of x
+        Gamma1  - symmtric diagonal scaling parameter for DDFact
+        Gamma2  - symmtric diagonal scaling parameter for DDFact comp
+
+        Output:
+        fval    - objective value at current point x
+        dx      - the gradient of the obejctive function at x
+        info    - struct containing necesssary information
+        %}
+        mix_DDFact_DDFact_comp_inline;
+        end
+    end 
 end
