@@ -13,19 +13,21 @@ else
 end
 
 %% calculate the better lower bound among C and Cinv if C is invertible
-[U,D]=eig(C);
-lam=diag(D);
-if min(lam)> 0
-    shift=log(prod(lam));  % logdet C
-    Cinv=U*diag(1./lam)*U';
-    [~,heurval]=heur(C,n,s);        % HEURSITIC ON ORIGINAL
-    [~,cheurval]=heur(Cinv,n,n-s); % HEURISTIC ON COMPLEMENT
-    if cheurval+shift > heurval        % PICK THE BEST
-        heurval=cheurval+shift;
-    end
-else
-    [~,heurval]=heur(C,n,s);        % HEURSITIC ON ORIGINAL
-end
+% [U,D]=eig(C);
+% lam=diag(D);
+% if min(lam)> 0
+%     shift=log(prod(lam));  % logdet C
+%     Cinv=U*diag(1./lam)*U';
+%     [~,heurval]=heur(C,n,s);        % HEURSITIC ON ORIGINAL
+%     [~,cheurval]=heur(Cinv,n,n-s); % HEURISTIC ON COMPLEMENT
+%     if cheurval+shift > heurval        % PICK THE BEST
+%         heurval=cheurval+shift;
+%     end
+% else
+%     [~,heurval]=heur(C,n,s);        % HEURSITIC ON ORIGINAL
+% end
+
+heurval = obj.obtain_lb(s);
 
 x0=s/n*ones(n,1);
 % Initialize Gamma
@@ -37,7 +39,7 @@ k=1;
 c1=1e-4;
 c2=0.9;
 
-%% calculate the gradient of fact bound with respect to Gamma
+%% calculate the gradient of linx bound with respect to Gamma
 [bound,x,~]= obj.Knitro_Linx(x0,s,Gamma);
 scaleC=diag(Gamma)*C;
 AUX = scaleC*diag(x)*scaleC';

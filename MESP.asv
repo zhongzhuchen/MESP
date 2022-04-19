@@ -303,18 +303,24 @@ classdef MESP
 
     %% alternating optimizing mixing parameter and scaling parameter for mixing bound
     methods
-        function [fval, x, info] = mix_alteritr(s, mix_pattern)
+
+        function [Gamma1, Gamma2, info] = mix_BFGS_Gamma(obj,s, mix_pattern, Gamma1Init, Gamma2Init)
         %{
         Input:
         s       - the size of subset we want to choose, also equals to the summation of all elements of x
-        Gamma1  - symmtric diagonal scaling parameter for DDFact
-        Gamma2  - symmtric diagonal scaling parameter for DDFact comp
+        mix_pattern
+                - "DDFact_Linx"
+                - "DDFact_comp_Linx"
+                - "DDFact_DDFact_comp"
+        Gamma1Init  - initial diagonal scaling for the first part of mixing
+        Gamma2Init  - initial diagonal scaling for the first part of mixing
 
         Output:
-        fval    - objective value at current point x
-        dx      - the gradient of the obejctive function at x
+        Gamma1  - (sub)optimal diagonal scaling for the first part of mixing
+        Gamma2  - (sub)optimal diagonal scaling for the first part of mixing
         info    - struct containing necesssary information
         %}
+        mix_BFGS_Gamma_inline;
         end
     end
 end
