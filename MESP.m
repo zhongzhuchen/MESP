@@ -301,7 +301,7 @@ classdef MESP
         end
     end 
 
-    %% alternating optimizing mixing parameter and scaling parameter for mixing bound
+    %% optimizing scaling parameter for mixing bound
     methods
         function [Gamma1, Gamma2, info] = mix_BFGS_Gamma(obj,s, mix_pattern, Gamma1Init, Gamma2Init)
         %{
