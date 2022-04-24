@@ -6,7 +6,7 @@ b_data=obj.b;
 [m,~] = size(obj.A);
 info=struct;
 
-if isempty(A_data)
+if m==0
     list63=[-1.362577835
     -3.090746497
     -4.841578301
@@ -289,10 +289,12 @@ if isempty(A_data)
         lb=list90(s);
     elseif n==124
         lb=list124(s);
-    else
-        [~,lb]=heur(C,n,s);
+    end
+    [~,lb1]=heur(C,s,A,b);
+    if lb1>lb
+        lb=lb1;
     end
 else
-    lb = -inf;
+    [~,lb]=heur(C,s,A,b);
 end
 
