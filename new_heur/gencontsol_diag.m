@@ -9,12 +9,14 @@ ub=ones(n,1);
 x0=[];
 options = knitro_options('algorithm',3,...  % active-set/simplex algorithm
                          'outlev',0);       % iteration display
+
 [x,heurval,exitflag,~] = ...
     knitro_milp(f,xType,A,b,Aeq,beq,lb,ub,x0,[],options);
+
 if exitflag<-199
     error('The MESP instance is infeasible.')
 end
 xind=transpose(1:n);
-xind=xind(x>0);
+xind=xind(x>0.5);
 end
 

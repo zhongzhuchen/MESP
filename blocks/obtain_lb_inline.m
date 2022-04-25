@@ -290,11 +290,11 @@ if m==0
     elseif n==124
         lb=list124(s);
     end
-    [~,lb1]=heur(C,s,A,b);
+    [~,lb1]=heur(C,s,A_data,b_data);
     if lb1>lb
         lb=lb1;
     end
 else
-    [~,lb]=heur(C,s,A,b);
+    [~,lb]=heur(C,s,A_data,b_data);
 end
 

@@ -17,7 +17,7 @@ while i<s
     newx = zeros(n,1);
     newx(newxind)=1;
 
-    if newval > val && A*newx<=b+1e-12
+    if newval > val && sum(max(A*newx-b,0))<=1e-12
         xind=newxind;
         compind=union(setdiff(compind,l),k);
         val=newval;

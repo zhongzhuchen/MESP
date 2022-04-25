@@ -37,7 +37,7 @@ if m>0
 
     x = zeros(n,1);
     x(xind1)=1;
-    if heurval1>heurval && A*x<=b+1e-12
+    if heurval1>heurval && sum(max(A*x-b,0))<=1e-12
        heurval=heurval1;
        xind=xind1;
     end
@@ -48,7 +48,7 @@ x = zeros(n,1);
 x(xind)=1;
 if abs(sum(x)-s)>1e-12
     error("Heuristic solution is infeasible.")
-elseif m>0 && A*x-b>1e-12
+elseif m>0 && sum(max(A*x-b,0))>1e-12
     error("Heuristic solution is infeasible.")
 end
 end
