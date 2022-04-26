@@ -3,6 +3,7 @@ classdef MESP
         C double
         C_comp double %inv(C)
         size double
+        r double %rank(C)
         A double
         b double
         F double
@@ -20,12 +21,15 @@ classdef MESP
                 error("Please input valid values.");
             end
             obj.C=C;
-            obj.C_comp=inv(C);
             obj.size=length(C);
             obj.A = A;
             obj.b = b;
             [obj.F,obj.Fsquare,obj.ldetC] = gen_data(C,0);
-            [obj.F_comp,obj.Fsquare_comp,~] = gen_data(C,1);
+            obj.r = rank(C);
+            if obj.r == obj.size
+                obj.C_comp=inv(C);
+                [obj.F_comp,obj.Fsquare_comp,~] = gen_data(C,1);    
+            end
         end
     end
 

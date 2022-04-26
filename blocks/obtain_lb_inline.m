@@ -291,10 +291,22 @@ if m==0
         lb=list124(s);
     end
     [~,lb1]=heur(C,s,A_data,b_data);
+    if obj.r == n
+        [~,lb2]=heur(obj.C_comp,n-s,-A_data,b_data-A_data*ones(n,1));
+        if lb2>lb1
+            lb1=lb2;
+        end
+    end
     if lb1>lb
         lb=lb1;
     end
 else
     [~,lb]=heur(C,s,A_data,b_data);
+    if obj.r == n
+        [~,lb2]=heur(obj.C_comp,n-s,-A_data,b_data-A_data*ones(n,1));
+        if lb2>lb
+            lb=lb2;
+        end
+    end
 end
 

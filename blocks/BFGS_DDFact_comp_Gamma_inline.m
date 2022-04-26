@@ -60,7 +60,7 @@ allres=res;
 allbound=bound;
 
 H=eye(n); % initialize the inverse Hessian approximation
-sprintf('k: %d, gap: %f, abs(res): %f, difgap: %f',k, gap, abs(res), difgap)
+% sprintf('k: %d, gap: %f, abs(res): %f, difgap: %f',k, gap, abs(res), difgap)
 
 %% we use the optimal solution of every last linx bound as the initial point 
 % for solving the next linx bound, trick for accelarating optimization
@@ -160,7 +160,7 @@ while(k<=Numiterations && gap > TOL && abs(res) > TOL && difgap > TOL)
     allbound=[allbound,bound];
     k=k+1; 
 
-    sprintf('k: %d, gap: %f, abs(res): %f, difgap: %f',k, gap, abs(res), difgap)
+    %sprintf('k: %d, gap: %f, abs(res): %f, difgap: %f',k, gap, abs(res), difgap)
 end
 info.iterations=k-1;
 info.gap=gap;
