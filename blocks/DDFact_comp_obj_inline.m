@@ -14,8 +14,8 @@ info=struct;
 %% transform to the complementary formation
 s = n-s;
 x = ones(n,1)-x;
-A_data=-obj.A;
-b_data=obj.b-obj.A*ones(n,1);
+A_data=obj.A;
+b_data=obj.b;
 [m,~] = size(obj.A);
 
 X=zeros(d);
@@ -100,10 +100,10 @@ info.dual_upsilon = xlp(1:n);
 info.dual_nu = xlp((n+1):2*n);
 info.dual_pi =  xlp((2*n+1):(2*n+m));
 info.dual_tau = xlp(end);
-info.dualgap=dualgap-(n-s)+sum(dx1)+sum(x.*log(Gamma));
+info.dualgap=dualgap-(n-s)+sum(dx1)+sum((n-x).*log(Gamma));
 % fval=-sum(log(eigDual(ind1)));
 sort_eigDual=sort(eigDual);
-fval=-sum(log(sort_eigDual(1:(n-s))))-sum(x.*log(Gamma));
+fval=-sum(log(sort_eigDual(1:(n-s))))-sum((n-x).*log(Gamma));
 
 %% transform objecvtive value and solution back
 fval=fval+ldetC;

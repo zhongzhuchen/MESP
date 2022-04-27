@@ -1,7 +1,12 @@
 load('data63.mat');
 n=length(C);
-s=35;
-a=MESP(C,double.empty(0,n),double.empty(0,1));
-
-% A = full(gallery('tridiag',n,1,1,1));
-% b = 2*ones(n,1);
+m=0;
+A1 = randi([1,10],m,n);
+s=10;
+A = double.empty(0,n);
+b = double.empty(0,1);
+[xind, ~] = heur(C,s,A,b);
+x=zeros(n,1);
+x(xind)=1;
+b1 = A1*x-ones(m,1);
+Prob = MESP(C,A1,b1);

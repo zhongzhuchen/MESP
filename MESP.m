@@ -190,7 +190,14 @@ classdef MESP
         BFGS_Linx_Gamma_inline;
         end
     end
-
+    %% methods for linx bound with scalar scaling
+    methods
+        function [optgamma,info]=BFGS_Linx_gamma(obj,s)
+        % BFGS method for optimizaing row diagonal scaling parameter
+        % of Linx objective function (factorization bound)
+        BFGS_Linx_gam_inline;
+        end
+    end    
     %% mixing DDFact and Linx
     methods
         function [fval,dx] = mix_DDFact_Linx_obj_knitro(obj,x,s,Gamma1,Gamma2,alpha)

@@ -14,22 +14,8 @@ else
 end
 
 %% calculate the better lower bound among C and Cinv if C is invertible
-% [U,D]=eig(C);
-% lam=diag(D);
-% if min(lam)> 0
-%     shift=log(prod(lam));  % logdet C
-%     Cinv=U*diag(1./lam)*U';
-%     [~,heurval]=heur(C,n,s);        % HEURSITIC ON ORIGINAL
-%     [~,cheurval]=heur(Cinv,n,n-s); % HEURISTIC ON COMPLEMENT
-%     if cheurval+shift > heurval        % PICK THE BEST
-%         heurval=cheurval+shift;
-%     end
-% else
-%     [~,heurval]=heur(C,n,s);        % HEURSITIC ON ORIGINAL
-% end
 heurval = obj.obtain_lb(s);
 
-% heurval=-Inf;
 F = obj.F_comp;
 Fsquare = obj.Fsquare_comp;
 x0=s/n*ones(n,1);
