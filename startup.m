@@ -1,6 +1,6 @@
 load('data63.mat');
 n=length(C);
-m=0;
+m=5;
 A1 = randi([1,10],m,n);
 s=10;
 A = double.empty(0,n);
