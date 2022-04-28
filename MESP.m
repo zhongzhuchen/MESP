@@ -157,13 +157,6 @@ classdef MESP
         %}
         Linx_obj_inline;
         end
-        
-        function [fval,dx] = Linx_obj_knitro(obj,x,s,Gamma)
-            % create a callback function for Knitro specifying objective value and gradient 
-            [fval,dx,~] = obj.Linx_obj(x,s,Gamma);
-            fval=-fval;
-            dx=-dx;
-        end
 
         function [fval,x,info] = Knitro_Linx(obj,x0,s,Gamma)
         % calling knitro to solve the DDFact problem
@@ -190,6 +183,7 @@ classdef MESP
         BFGS_Linx_Gamma_inline;
         end
     end
+    
     %% methods for linx bound with scalar scaling
     methods
         function [optgamma,info]=BFGS_Linx_gamma(obj,s)

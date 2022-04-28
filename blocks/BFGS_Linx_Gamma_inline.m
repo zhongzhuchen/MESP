@@ -1,9 +1,12 @@
 %% obtain class properties
-C=obj.C;
-n = obj.size;
+A_data=obj.A;
+b_data=obj.b;
+[m,~] = size(obj.A);
 info=struct;
-
+C = obj.C;
+n = obj.size;
 t1=tic;
+
 if n>200
     TOL= 10^(-6);
     Numiterations=20; 
@@ -13,20 +16,6 @@ else
 end
 
 %% calculate the better lower bound among C and Cinv if C is invertible
-% [U,D]=eig(C);
-% lam=diag(D);
-% if min(lam)> 0
-%     shift=log(prod(lam));  % logdet C
-%     Cinv=U*diag(1./lam)*U';
-%     [~,heurval]=heur(C,n,s);        % HEURSITIC ON ORIGINAL
-%     [~,cheurval]=heur(Cinv,n,n-s); % HEURISTIC ON COMPLEMENT
-%     if cheurval+shift > heurval        % PICK THE BEST
-%         heurval=cheurval+shift;
-%     end
-% else
-%     [~,heurval]=heur(C,n,s);        % HEURSITIC ON ORIGINAL
-% end
-
 heurval = obj.obtain_lb(s);
 
 x0=s/n*ones(n,1);
@@ -40,7 +29,7 @@ c1=1e-4;
 c2=0.9;
 
 %% calculate the gradient of linx bound with respect to Gamma
-[bound,x,~]= obj.Knitro_Linx(x0,s,Gamma);
+[bound,x,~] = Knitro_Linx_light(x0,C,s,A_data,b_data,Gamma);
 scaleC=diag(Gamma)*C;
 AUX = scaleC*diag(x)*scaleC';
 B = - diag(x) + eye(n);
@@ -103,7 +92,7 @@ while(k<=Numiterations && gap > TOL && abs(res) > TOL && difgap > TOL)
     %check if alfa=1 satisfies the Strong Wolfe Conditions
     alfa=1;
     nGamma=Gamma.*exp(alfa*dir);
-    [nbound,nx,~]= obj.Knitro_Linx(nx,s,nGamma);
+    [nbound,nx,~] = Knitro_Linx_light(nx,C,s,A_data,b_data,nGamma);
     scaleC=diag(nGamma)*C;
     nAUX = scaleC*diag(nx)*scaleC';
     nB = - diag(nx) + eye(n);
@@ -131,7 +120,7 @@ while(k<=Numiterations && gap > TOL && abs(res) > TOL && difgap > TOL)
     while judge==0
         alfa=(a+b)/2;
         nGamma=Gamma.*exp(alfa*dir);
-        [nbound,nx,~]= obj.Knitro_Linx(nx,s,nGamma);
+        [nbound,nx,~] = Knitro_Linx_light(nx,C,s,A_data,b_data,nGamma);
         scaleC=diag(nGamma)*C;
         nAUX = scaleC*diag(nx)*scaleC';
         nB = - diag(nx) + eye(n);
@@ -175,7 +164,7 @@ info.absres=abs(res);
 info.difgap=difgap;
 [optbound,optiteration]=min(allbound);
 optGamma=allGamma(:,optiteration);
-[bound1,~,~]= obj.Knitro_Linx(x0,s,ones(n,1));
+[bound1,~,~] = Knitro_Linx_light(x0,C,s,A_data,b_data,ones(n,1));
 if optbound>bound1
     optbound=bound1;
     optGamma=ones(n,1);

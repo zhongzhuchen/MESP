@@ -3,11 +3,12 @@ A_data=obj.A;
 b_data=obj.b;
 [m,~] = size(obj.A);
 info=struct;
-scaleC=diag(Gamma)*obj.C;
+C = obj.C;
+scaleC=diag(Gamma)*C;
 n = obj.size;
 
 %% calling knitro
-obj_fn =  @(x) obj.Linx_obj_knitro(x,s,Gamma);
+obj_fn =  @(x) Linx_obj_Knitro(x,C,Gamma);
 lb=zeros(n,1);
 ub=ones(n,1);
 Aeq=ones(1,n);
