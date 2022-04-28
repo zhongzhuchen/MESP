@@ -4,10 +4,12 @@ n = obj.size;
 A_data=obj.A;
 b_data=obj.b;
 [m,~] = size(obj.A);
+F=obj.F;
+Fsquare=obj.Fsquare;
 info=struct;
 
 %% calling knitro
-obj_fn =  @(x) obj.DDFact_obj_knitro(x,s,Gamma);
+obj_fn =  @(x) DDFact_obj_Knitro(x,s,F,Fsquare,Gamma);
 lb=zeros(n,1);
 ub=ones(n,1);
 Aeq=ones(1,n);

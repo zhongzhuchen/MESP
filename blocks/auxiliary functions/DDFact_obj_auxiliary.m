@@ -46,11 +46,6 @@ sort_D=sort(D, 'descend');
 [k,mid_val]=find_k(sort_D,s);
 
 if mid_val<=0
-%     obj=-Inf;
-%     dx=zeros(n,1);
-%     info=0;
-%     sprintf('k=%d, mid_val=%f, sort_D(s)=%f, rank(X)=%d', k, mid_val, sort_D(s), rank(X))
-%     return
     sprintf('k=%d, mid_val=%f, sort_D(s)=%f, sum(x)=%f, rank(X)=%d', k, mid_val, sort_D(s), sum(x), rank(X))
     error('Something went wrong with calculating X or C might be a zero matrix.');
 end
@@ -94,25 +89,8 @@ K1=F*U;
 K2=K1.*(eigDual');
 dx=sum(K2.*K1,2);
 
-% calculate dual solutions
-[sort_dx,ind]=sort(dx,'descend');
-% calculate dual variables
-tau=sort_dx(s);
-nu=zeros(n,1);
-nu(ind(1:s))=sort_dx(1:s)-tau;
-v=nu+tau-dx;
-info.tau=tau;
-info.dual_v=v;
-info.dual_nu=nu;
-% calculate dual gap
-info.dualgap=sum(sort_dx(1:s))-s;
-
 % calculate objective value
 sort_eigDual=sort(eigDual);
 obj=-sum(log(sort_eigDual(1:s)));
-info.dualbound=obj+info.dualgap;
-% cache for mixing
-info.cache1=-s;
-info.cache2=sum(dx)-s;
 end
 

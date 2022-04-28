@@ -54,7 +54,7 @@ nx=x;
 
 %% loop
 while(k<=Numiterations && gap > TOL && abs(res) > TOL && difgap > TOL)
-    % sprintf('iteration: %d',k);
+    %sprintf('iteration: %d',k)
     if k>1
         difgap=abs(allbound(k)-allbound(k-1));
         if k>=2 
@@ -97,13 +97,15 @@ while(k<=Numiterations && gap > TOL && abs(res) > TOL && difgap > TOL)
 
     ngrad=nGamma.*dnGamma-ny;
     nres= norm(ngrad);
-    [U,D]=eig(H);
-    % sprintf("nbound:%f, nres:%f, Hessmineig:%f, min(nGamma):%f", nbound, nres,min(diag(D)),min(nGamma))
+%     [U,D]=eig(H);
+%     sprintf("nbound:%f, nres:%f, Hessmineig:%f, min(nGamma):%f", nbound, nres,min(diag(D)),min(nGamma))
 
     if nbound-bound>c1*alfa*dir'*grad
         judge=0;
+        sprintf("enter line search")
     elseif abs(dir'*ngrad)>c2*abs(dir'*grad)
         judge=0;
+        sprintf("enter line search")
     else
         judge=1;
     end
@@ -146,7 +148,8 @@ while(k<=Numiterations && gap > TOL && abs(res) > TOL && difgap > TOL)
     allbound=[allbound,bound];
     k=k+1; 
 
-    %sprintf('k: %d, gap: %f, abs(res): %f, difgap: %f',k, gap, abs(res), difgap)
+    sprintf('k: %d, gap: %f, abs(res): %f, difgap: %f',k, gap, abs(res), difgap)
+    sprintf('step:%f, norm(Gamma-e):%f',alfa,norm(Gamma-ones(n,1)))   
 end
 info.iterations=k-1;
 info.gap=gap;

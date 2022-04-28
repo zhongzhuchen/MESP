@@ -5,8 +5,11 @@ b_data=obj.b;
 info=struct;
 scaleC=diag(Gamma)*obj.C;
 n = obj.size;
-
+F_comp = obj.F_comp;
+Fsquare_comp = obj.Fsquare_comp;
+ldetC = obj.ldetC;
 %% calling knitro
+% obj_fn =  @(x) DDFact_comp_obj_Knitro(x,s,F_comp,Fsquare_comp,ldetC,Gamma);
 obj_fn =  @(x) obj.DDFact_comp_obj_knitro(x,s,Gamma);
 lb=zeros(n,1);
 ub=ones(n,1);
@@ -20,7 +23,7 @@ if sum(abs(Aeq*x0-beq))>1e-10
 end
 
 options = knitro_options('algorithm', 0, 'convex', 1, 'derivcheck', 0, 'outlev', 0 , 'gradopt', 1, ...
-                         'hessopt', 2, 'maxit', 1000, 'xtol', 1e-15, ...
+                         'hessopt', 2, 'maxit', 1000, 'xtol', 1e-15,...
                          'feastol', 1e-10, 'opttol', 1e-10, 'bar_feasible',1,...
                          'bar_maxcrossit', 10);
 TStart=tic;

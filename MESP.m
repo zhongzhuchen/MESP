@@ -58,13 +58,6 @@ classdef MESP
         %}
         DDFact_obj_inline;
         end
-        
-        function [fval,dx] = DDFact_obj_knitro(obj,x,s,Gamma)
-            % create a callback function for Knitro specifying objective value and gradient 
-            [fval,dx,~] = obj.DDFact_obj(x,s,Gamma);
-            fval=-fval;
-            dx=-dx;
-        end
 
         function [fval,x,info] = Knitro_DDFact(obj,x0,s,Gamma)
         % calling knitro to solve the DDFact problem
