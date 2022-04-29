@@ -57,9 +57,10 @@ dx=dx1-log(Gamma);
 %% rocover to the original solution
 s=n-s;
 dx=-dx;
+x=ones(n,1)-x;
 
 sort_eigDual=sort(eigDual);
-fval=-sum(log(sort_eigDual(1:(n-s))))-sum((n-x).*log(Gamma));
+fval=-sum(log(sort_eigDual(1:(n-s))))-sum((ones(n,1)-x).*log(Gamma));
 
 %% transform objecvtive value and solution back
 fval=fval+ldetC;

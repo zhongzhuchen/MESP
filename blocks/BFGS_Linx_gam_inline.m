@@ -1,7 +1,10 @@
 %% obtain class properties
-C=obj.C;
-n = obj.size;
+A_data=obj.A;
+b_data=obj.b;
+[m,~] = size(obj.A);
 info=struct;
+C = obj.C;
+n = obj.size;
 
 t1=tic;
 if n>200
@@ -30,7 +33,7 @@ k=1;
 c1=1e-4;
 c2=0.9;
 %solve the linx ralaxation for gamma and obtain x
-[bound,x,~]= obj.Knitro_Linx(x0,s,sqrt(gamma)*ones(n,1));
+[bound,x,~] = Knitro_Linx_light(x0,C,s,A_data,b_data,sqrt(gamma)*ones(n,1));
 AUX = C*diag(x)*C;
 %Compute F(gamma,x)
 F=gamma*AUX - diag(x) + eye(n);
@@ -63,7 +66,7 @@ while(k<=Numiterations && gap > TOL && abs(res) > TOL && difgap > TOL)
     %check if alfa=1 satisfies the Strong Wolfe Conditions
     alfa=1;
     ngamma=gamma*exp(alfa*dir);
-    [nbound,nx,~]= obj.Knitro_Linx(nx,s,sqrt(ngamma)*ones(n,1));
+    [nbound,nx,~] = Knitro_Linx_light(nx,C,s,A_data,b_data,sqrt(ngamma)*ones(n,1));
     nAUX = C*diag(nx)*C;
     nF=ngamma*nAUX - diag(nx) + eye(n);
     nF=(nF+nF')/2; % force symmetry
@@ -84,7 +87,7 @@ while(k<=Numiterations && gap > TOL && abs(res) > TOL && difgap > TOL)
     while judge==0
         alfa=(a+b)/2;
         ngamma=gamma*exp(alfa*dir);
-        [nbound,nx,~]= obj.Knitro_Linx(nx,s,sqrt(ngamma)*ones(n,1));
+        [nbound,nx,~] = Knitro_Linx_light(nx,C,s,A_data,b_data,sqrt(ngamma)*ones(n,1));
         nAUX = C*diag(nx)*C;
         nF=ngamma*nAUX - diag(nx) + eye(n);
         nF=(nF+nF')/2; % force symmetry
@@ -121,7 +124,7 @@ info.absres=abs(res);
 info.difgap=difgap;
 [optbound,optiteration]=min(allbound);
 optgamma=allgamma(optiteration);
-[bound1,~]= obj.Knitro_Linx(x0,s,ones(n,1));
+[bound1,~,~] = Knitro_Linx_light(x0,C,s,A_data,b_data,ones(n,1));
 if optbound>bound1
     optbound=bound1;
     optgamma=1;

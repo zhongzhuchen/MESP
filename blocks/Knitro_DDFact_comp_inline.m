@@ -9,8 +9,7 @@ F_comp = obj.F_comp;
 Fsquare_comp = obj.Fsquare_comp;
 ldetC = obj.ldetC;
 %% calling knitro
-% obj_fn =  @(x) DDFact_comp_obj_Knitro(x,s,F_comp,Fsquare_comp,ldetC,Gamma);
-obj_fn =  @(x) obj.DDFact_comp_obj_knitro(x,s,Gamma);
+obj_fn =  @(x) DDFact_comp_obj_Knitro(x,s,F_comp,Fsquare_comp,ldetC,Gamma);
 lb=zeros(n,1);
 ub=ones(n,1);
 Aeq=ones(1,n);

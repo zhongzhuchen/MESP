@@ -1,7 +1,13 @@
 %% obtain class properties
 C=obj.C;
-n = obj.size;
+A_data=obj.A;
+b_data=obj.b;
+[m,~] = size(obj.A);
 info=struct;
+n = obj.size;
+F_comp = obj.F_comp;
+Fsquare_comp = obj.Fsquare_comp;
+ldetC = obj.ldetC;
 
 t1=tic;
 %% setting different numbers of iterations for different problem size
@@ -29,8 +35,8 @@ c1=1e-4;
 c2=0.9;
 
 %% calculate the gradient of fact bound with respect to Gamma
-[bound,x,~]= obj.Knitro_DDFact_comp(x0,s,Gamma);
-
+%[bound,x,~]= obj.Knitro_DDFact_comp(x0,s,Gamma);
+[bound,x,~] = Knitro_DDFact_comp_light(x0,C,s,F_comp,Fsquare_comp,ldetC,A_data,b_data,Gamma);
 y=ones(n,1)-x;
 Fy=diag(sqrt(y))*F;
 Fsquarey=Fsquare.*reshape(y,1,1,n);
@@ -88,7 +94,8 @@ while(k<=Numiterations && gap > TOL && abs(res) > TOL && difgap > TOL)
     %check if alfa=1 satisfies the Strong Wolfe Conditions
     alfa=1;
     nGamma=Gamma.*exp(alfa*dir);
-    [nbound,nx,~]= obj.Knitro_DDFact_comp(nx,s,nGamma);
+%     [nbound,nx,~]= obj.Knitro_DDFact_comp(nx,s,nGamma);
+    [nbound,nx,~] = Knitro_DDFact_comp_light(nx,C,s,F_comp,Fsquare_comp,ldetC,A_data,b_data,nGamma);
     ny=ones(n,1)-nx;
     nFy=diag(sqrt(ny))*F;
     nFsquarey=Fsquare.*reshape(ny,1,1,n);
@@ -102,10 +109,10 @@ while(k<=Numiterations && gap > TOL && abs(res) > TOL && difgap > TOL)
 
     if nbound-bound>c1*alfa*dir'*grad
         judge=0;
-        sprintf("enter line search")
+%         sprintf("enter line search")
     elseif abs(dir'*ngrad)>c2*abs(dir'*grad)
         judge=0;
-        sprintf("enter line search")
+%         sprintf("enter line search")
     else
         judge=1;
     end
@@ -115,13 +122,13 @@ while(k<=Numiterations && gap > TOL && abs(res) > TOL && difgap > TOL)
     while judge==0
         alfa=(a+b)/2;
         nGamma=Gamma.*exp(alfa*dir);
-        [nbound,nx,~]= obj.Knitro_DDFact_comp(nx,s,nGamma);
+%         [nbound,nx,~]= obj.Knitro_DDFact_comp(nx,s,nGamma);
+        [nbound,nx,~] = Knitro_DDFact_comp_light(nx,C,s,F_comp,Fsquare_comp,ldetC,A_data,b_data,nGamma);
         ny=ones(n,1)-nx;
         nFy=diag(sqrt(ny))*F;
         nFsquarey=Fsquare.*reshape(ny,1,1,n);
         
         [~,dnGamma,~] = DDFact_obj_auxiliary(nGamma,n-s,nFy,nFsquarey);
-
         ngrad=nGamma.*dnGamma-ny;
         nres= norm(ngrad);
         if nbound-bound>c1*alfa*dir'*grad
@@ -148,8 +155,8 @@ while(k<=Numiterations && gap > TOL && abs(res) > TOL && difgap > TOL)
     allbound=[allbound,bound];
     k=k+1; 
 
-    sprintf('k: %d, gap: %f, abs(res): %f, difgap: %f',k, gap, abs(res), difgap)
-    sprintf('step:%f, norm(Gamma-e):%f',alfa,norm(Gamma-ones(n,1)))   
+%     sprintf('k: %d, gap: %f, abs(res): %f, difgap: %f',k, gap, abs(res), difgap)
+%     sprintf('step:%f, norm(Gamma-e):%f',alfa,norm(Gamma-ones(n,1)))   
 end
 info.iterations=k-1;
 info.gap=gap;
@@ -157,7 +164,8 @@ info.absres=abs(res);
 info.difgap=difgap;
 [optbound,optiteration]=min(allbound);
 optGamma=allGamma(:,optiteration);
-[bound1,~,~]= obj.Knitro_DDFact_comp(x0,s,ones(n,1));
+% [bound1,~,~]= obj.Knitro_DDFact_comp(x0,s,ones(n,1));
+[bound1,~,~] = Knitro_DDFact_comp_light(x0,C,s,F_comp,Fsquare_comp,ldetC,A_data,b_data,ones(n,1));
 if optbound>bound1
     optbound=bound1;
     optGamma=ones(n,1);
