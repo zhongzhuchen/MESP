@@ -1,4 +1,4 @@
-function [fval,dx] = Linx_obj_Knitro(x,C,Gamma)
+function [fval,dx,info] = Linx_obj_Knitro(x,C,Gamma)
 % light version of Linx_obj without 
 %% obtain class properties and assign values
 % scale C with Gamma
@@ -26,5 +26,6 @@ end
 
 fval=-fval;
 dx=-dx;
+info.cache = 0.5*sum(dx2)-n/2;
 end
 

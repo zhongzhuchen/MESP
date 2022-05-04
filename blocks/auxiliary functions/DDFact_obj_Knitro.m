@@ -1,4 +1,4 @@
-function [fval,dx] = DDFact_obj_Knitro(x,s,F,Fsquare,Gamma)
+function [fval,dx,info] = DDFact_obj_Knitro(x,s,F,Fsquare,Gamma)
 %% obtain class properties and assign values
 % scale F, Fsquare with Gamma
 n=length(x);
@@ -57,4 +57,6 @@ fval=-sum(log(sort_eigDual(1:s)))-sum(x.*log(Gamma));
 
 fval=-fval;
 dx=-dx;
+
+info.cache = -s;
 end
