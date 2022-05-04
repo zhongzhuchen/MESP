@@ -1,4 +1,4 @@
-function [fval,dx] = DDFact_comp_obj_Knitro(x,s,F_comp,Fsquare_comp,ldetC,Gamma)
+function [fval,dx,info] = DDFact_comp_obj_Knitro(x,s,F_comp,Fsquare_comp,ldetC,Gamma)
 % scale F_comp, Fsquare_comp with Gamma
 n=length(x);
 F=diag(sqrt(Gamma))*F_comp;
@@ -67,5 +67,6 @@ fval=fval+ldetC;
 
 fval=-fval;
 dx=-dx;
+info.cache=sum(dx1)-(n-s);
 end
 

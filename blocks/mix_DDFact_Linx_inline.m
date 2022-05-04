@@ -55,7 +55,7 @@ else
                              'bar_maxcrossit', 10);
     while b-a > 1e-6
         x0=(xa+xb)/2;
-        if sum(abs(Aeq*x0-beq))>1e-10
+        if sum(abs(Aeq*x0-beq))>n*1e-10
             error('The initial point x0 is not feasible.')
         end
         alpha=(a+b)/2;
@@ -67,7 +67,7 @@ else
         fval = -((1-alpha)*fval1+ alpha*fval2);
         dx = -((1-alpha)*dx1+(alpha)*dx2);
         dalpha = -fval2 +fval1;
-        if abs(dalpha)<1e-6
+        if abs(dalpha)<1e-8
             break
         elseif dalpha<0
             a=alpha;
