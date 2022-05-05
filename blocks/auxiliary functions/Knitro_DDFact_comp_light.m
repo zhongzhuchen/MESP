@@ -13,7 +13,7 @@ beq=s;
 A=A_data;
 b=b_data;
 
-if sum(abs(Aeq*x0-beq))>1e-10
+if sum(abs(Aeq*x0-beq))>n*1e-10
     error('The initial point x0 is not feasible.')
 end
 

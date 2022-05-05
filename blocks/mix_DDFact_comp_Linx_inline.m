@@ -10,7 +10,6 @@ ldetC=obj.ldetC;
 info=struct;
 
 %% solve linx and fact bound
-x0=s/n*ones(n,1);
 alpha=0;
 % search interval
 a=0;
@@ -106,7 +105,7 @@ info.dual_pi =  xlp((2*n+1):(2*n+m));
 info.dual_tau = xlp(end);
 
 % calculate continuous dualgap
-info.continuous_dualgap=dualgap+(1-alpha)*(info1.cache+sum(x.*log(Gamma1)))+alpha*(info2.cache+sum(x.*log(Gamma2)));
+info.continuous_dualgap=dualgap+(1-alpha)*(info1.cache-sum(x.*log(Gamma1)))+alpha*(info2.cache+sum(x.*log(Gamma2)));
 info.dualbound=info.continuous_dualgap+fval;
 info.time=time;
 info.cputime=tEnd;

@@ -9,7 +9,6 @@ Fsquare=obj.Fsquare;
 info=struct;
 
 %% solve linx and fact bound
-x0=s/n*ones(n,1);
 alpha=0;
 % search interval
 a=0;

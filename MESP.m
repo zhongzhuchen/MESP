@@ -101,12 +101,6 @@ classdef MESP
         DDFact_comp_obj_inline;
         end
         
-        function [fval,dx] = DDFact_comp_obj_knitro(obj,x,s,Gamma)
-        % create a callback function for Knitro specifying objective value and gradient 
-        [fval,dx,~] = obj.DDFact_comp_obj(x,s,Gamma);
-        fval=-fval;
-        dx=-dx;
-        end
 
         function [fval,x,info] = Knitro_DDFact_comp(obj,x0,s,Gamma)
         % calling knitro to solve the complementary DDFact problem
@@ -188,7 +182,7 @@ classdef MESP
     %% mixing DDFact and Linx
     methods
 
-        function [fval,dx,info] = mix_DDFact_Linx(obj,s,Gamma1,Gamma2)
+        function [fval,x,info] = mix_DDFact_Linx(obj,x0,s,Gamma1,Gamma2)
         % mixing Linx and DDFact bound (with optimal mixing parameter)
         %{
         Input:
@@ -198,7 +192,7 @@ classdef MESP
 
         Output:
         fval    - objective value at current point x
-        dx      - the gradient of the obejctive function at x
+        x       - final solution
         info    - struct containing necesssary information
         %}
         mix_DDFact_Linx_inline;
@@ -207,7 +201,7 @@ classdef MESP
 
     %% mixing DDFactcomp and Linx
     methods
-        function [fval,dx,info] = mix_DDFact_comp_Linx(obj,s,Gamma1,Gamma2)
+        function [fval,x,info] = mix_DDFact_comp_Linx(obj,x0,s,Gamma1,Gamma2)
         % mixing Linx and DDFact comp bound (with optimal mixing parameter)
         %{
         Input:
@@ -217,7 +211,7 @@ classdef MESP
 
         Output:
         fval    - objective value at current point x
-        dx      - the gradient of the obejctive function at x
+        x       - final solution
         info    - struct containing necesssary information
         %}
         mix_DDFact_comp_Linx_inline;
@@ -226,26 +220,8 @@ classdef MESP
 
     %% mixing DDFact and DDFact comp
     methods
-        function [fval,dx] = mix_DDFact_DDFact_comp_obj_knitro(obj,x,s,Gamma1,Gamma2,alpha)
-        % create a callback function for Knitro specifying objective value and gradient 
-        % This function calculate the objective value, gradient, and info
-        % of mixing DDFact&DDFact comp bound
-        %{
-        Input:
-        x       - current point for the mix problem
-        s       - the size of subset we want to choose, also equals to the summation of all elements of x
-        Gamma1  - symmtric diagonal scaling paramter for DDFact
-        Gamma2  - symmtric diagonal scaling paramter for DDFact comp
-        alpha   - mixing parameter
-    
-        Output:
-        fval    - objective value at current point x
-        dx      - the gradient of the obejctive function at x
-        %}
-        mix_DDFact_DDFact_comp_obj_knitro_inline;
-        end
 
-        function [fval,dx,info] = mix_DDFact_DDFact_comp(obj,s,Gamma1,Gamma2)
+        function [fval,x,info] = mix_DDFact_DDFact_comp(obj,x0,s,Gamma1,Gamma2)
         % mixing DDFact and DDFact comp bound (with optimal mixing parameter)
         %{
         Input:
@@ -255,14 +231,14 @@ classdef MESP
 
         Output:
         fval    - objective value at current point x
-        dx      - the gradient of the obejctive function at x
+        x       - final solution
         info    - struct containing necesssary information
         %}
         mix_DDFact_DDFact_comp_inline;
         end
     end 
 
-    %% optimizing scaling parameter for mixing bound
+    %% optimizing scaling parameter for mixing bound (mix two)
     methods
         function [Gamma1, Gamma2, info] = mix_BFGS_Gamma(obj,s, mix_pattern, Gamma1Init, Gamma2Init)
         %{
@@ -281,6 +257,17 @@ classdef MESP
         info    - struct containing necesssary information
         %}
         mix_BFGS_Gamma_inline;
+        end
+    end
+
+    %% mixing bound of DDFact, DDFact comp, and Linx
+    methods
+        function [fval,x,info]=mix_DDFact_DDFact_comp_Linx(obj,x0,s,Gamma1,Gamma2,Gamma3)
+            mix_DDFact_DDFact_comp_Linx_inline;
+        end
+
+        function [Gamm1,Gamma2,Gamma3,info]=mix_DDFact_DDFact_comp_Linx_BFGS_Gamma(obj,s,Gamma1,Gamma2,Gamma3)
+            mix_DDFact_DDFact_comp_Linx_BFGS_Gamma_inline;
         end
     end
 end

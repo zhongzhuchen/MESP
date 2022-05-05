@@ -6,6 +6,7 @@ F = obj.F;
 Fsquare = obj.Fsquare;
 F_comp = obj.F_comp;
 Fsquare_comp =obj.Fsquare_comp;
+ldetC=obj.ldetC;
 
 t1=tic;
 if n>200
@@ -17,21 +18,8 @@ else
 end
 
 %% calculate the better lower bound among C and Cinv if C is invertible
-% [U,D]=eig(C);
-% lam=diag(D);
-% if min(lam)> 0
-%     shift=log(prod(lam));  % logdet C
-%     Cinv=U*diag(1./lam)*U';
-%     [~,heurval]=heur(C,n,s);        % HEURSITIC ON ORIGINAL
-%     [~,cheurval]=heur(Cinv,n,n-s); % HEURISTIC ON COMPLEMENT
-%     if cheurval+shift > heurval        % PICK THE BEST
-%         heurval=cheurval+shift;
-%     end
-% else
-%     [~,heurval]=heur(C,n,s);        % HEURSITIC ON ORIGINAL
-% end
 heurval = obj.obtain_lb(s);
-x0=s/n*ones(n,1);
+nx=s/n*ones(n,1);
 % Initialize Gamma
 Gamma1=Gamma1Init;
 Gamma2=Gamma2Init;
@@ -43,65 +31,12 @@ c1=1e-4;
 c2=0.9;
 
 %% calculate the gradient of mixing bound with respect to Gamma
-if mix_pattern == "DDFact_Linx"
-    [bound,x,info_mix]= obj.mix_DDFact_Linx(s,Gamma1,Gamma2);
+mix_BFGS_Gamma_inline_sub;
+bound=nbound;
+x=nx;
 
-    Fx=diag(sqrt(x))*F;
-    Fsquarex=Fsquare.*reshape(x,1,1,n);
-    
-    [~,dGamma1,~] = DDFact_obj_auxiliary(Gamma1,s,Fx,Fsquarex);
-    grad1=Gamma1.*dGamma1-x;
-
-    scaleC=diag(Gamma2)*C;
-    AUX = scaleC*diag(x)*scaleC';
-    B = - diag(x) + eye(n);
-    %Compute F(gamma,x)
-    L= AUX+B;
-    L=(L+L')/2; % force symmetry
-    %Compute inv(F(gamma,x))
-    [U,D]=eig(L);
-    lam=diag(D);
-    Finv=U*diag(1./lam)*U';
-    %Compute the residual res
-    grad2=diag(Finv*AUX)-x;
-elseif mix_pattern == "DDFact_comp_Linx"
-    [bound,x,info_mix]= obj.mix_DDFact_comp_Linx(s,Gamma1,Gamma2);
-
-    y=ones(n,1)-x;
-    Fy=diag(sqrt(y))*F;
-    Fsquarey=Fsquare.*reshape(y,1,1,n);
-    [~,dGamma1,~] = DDFact_obj_auxiliary(Gamma1,n-s,Fy,Fsquarey);
-    grad1=Gamma1.*dGamma1-y;
-
-    scaleC=diag(Gamma2)*C;
-    AUX = scaleC*diag(x)*scaleC';
-    B = - diag(x) + eye(n);
-    %Compute F(gamma,x)
-    L= AUX+B;
-    L=(L+L')/2; % force symmetry
-    %Compute inv(F(gamma,x))
-    [U,D]=eig(L);
-    lam=diag(D);
-    Finv=U*diag(1./lam)*U';
-    %Compute the residual res
-    grad2=diag(Finv*AUX)-x;
-elseif mix_pattern == "DDFact_DDFact_comp"
-    [bound,x,info_mix]= obj.mix_DDFact_DDFact_comp(s,Gamma1,Gamma2);
-
-    Fx=diag(sqrt(x))*F;
-    Fsquarex=Fsquare.*reshape(x,1,1,n);
-    [~,dGamma1,~] = DDFact_obj_auxiliary(Gamma1,s,Fx,Fsquarex);
-    grad1=Gamma1.*dGamma1-x;
-
-    y=ones(n,1)-x;
-    Fy=diag(sqrt(y))*F;
-    Fsquarey=Fsquare.*reshape(y,1,1,n);
-    [~,dGamma2,~] = DDFact_obj_auxiliary(Gamma2,n-s,Fy,Fsquarey);
-    grad2=Gamma2.*dGamma2-y;
-else
-    error("There is no such mixing pattern.")
-end
 alpha=info_mix.alpha;
+
 grad=[(1-alpha)*grad1; alpha*grad2];
 gap=bound-heurval;
 res=norm(grad);
@@ -111,29 +46,54 @@ allGamma=Gamma;
 allres=res;
 allbound=bound;
 
-H=eye(2*n); % initialize the inverse Hessian approximation
+% initialize the inverse Hessian approximation, force to be block diagonal
+% in the following text
+H=eye(2*n); 
 %% we use the optimal solution of every last linx bound as the initial point 
 % for solving the next linx bound, trick for accelarating optimization
 nx=x;
 
 %% loop
 while(k<=Numiterations && gap > TOL && abs(res) > TOL && difgap > TOL)
-    % sprintf('iteration: %d',k);
+    sprintf('iteration: %d',k)
     if k>1
         difgap=abs(allbound(k)-allbound(k-1));
         if k>=2 
-            s_gmuly=deltag'*deltay;
-            if k==2 
-                gam=s_gmuly/(deltag'*deltag);
-                H=gam*H;
+            deltag1=deltag(1:n);
+            deltag2=deltag((n+1):(2*n));
+            deltay1=deltay(1:n);
+            deltay2=deltay((n+1):(2*n));
+            H1=H(1:n,1:n);
+            H2=H((n+1):(2*n),(n+1):(2*n));
+            s_gmuly1=deltag1'*deltay1;
+            s_gmuly2=deltag2'*deltay2;
+            if k==2
+                % if alpha=0 or 1, we do not update the corresponding
+                % Hessian approximation
+                if alpha < 1-1e-6
+                    gam1=s_gmuly1/(deltag1'*deltag1);
+                     H1=gam1*H1;
+                end
+                if alpha >1e-6
+                    gam2=s_gmuly2/(deltag2'*deltag2);
+                    H2=gam2*H2;
+                end
             end
-            if(s_gmuly>=TOL)
-                Hg=H*deltag;
-                Hgy=Hg*deltay';
-                gHg=deltag'*Hg;
-                yg=s_gmuly;
-                H=H+(yg+gHg)/(yg^2)*(deltay*deltay')-(Hgy+Hgy')/yg;
+            if(s_gmuly1>=TOL)
+                Hg=H1*deltag1;
+                Hgy=Hg*deltay1';
+                gHg=deltag1'*Hg;
+                yg=s_gmuly1;
+                H1=H1+(yg+gHg)/(yg^2)*(deltay1*deltay1')-(Hgy+Hgy')/yg;
             end
+            if(s_gmuly2>=TOL)
+                Hg=H2*deltag2;
+                Hgy=Hg*deltay2';
+                gHg=deltag2'*Hg;
+                yg=s_gmuly2;
+                H2=H2+(yg+gHg)/(yg^2)*(deltay2*deltay2')-(Hgy+Hgy')/yg;
+            end
+            H=blkdiag(H1,H2);
         end
     end
     if rank(H)<2*n
@@ -155,66 +115,13 @@ while(k<=Numiterations && gap > TOL && abs(res) > TOL && difgap > TOL)
     Gamma1=nGamma(1:n);
     Gamma2=nGamma((n+1):2*n);
 
-    if mix_pattern == "DDFact_Linx"
-        [nbound,nx,info_mix]= obj.mix_DDFact_Linx(s,Gamma1,Gamma2);
+    mix_BFGS_Gamma_inline_sub;
 
-        Fx=diag(sqrt(nx))*F;
-        Fsquarex=Fsquare.*reshape(nx,1,1,n);
-        
-        [~,dGamma1,~] = DDFact_obj_auxiliary(Gamma1,s,Fx,Fsquarex);
-        grad1=Gamma1.*dGamma1-nx;
-    
-        scaleC=diag(Gamma2)*C;
-        AUX = scaleC*diag(nx)*scaleC';
-        B = - diag(nx) + eye(n);
-        %Compute F(gamma,x)
-        L= AUX+B;
-        L=(L+L')/2; % force symmetry
-        %Compute inv(F(gamma,x))
-        [U,D]=eig(L);
-        lam=diag(D);
-        Finv=U*diag(1./lam)*U';
-        %Compute the residual res
-        grad2=diag(Finv*AUX)-nx;
-    elseif mix_pattern == "DDFact_comp_Linx"
-        [nbound,nx,info_mix]= obj.mix_DDFact_comp_Linx(s,Gamma1,Gamma2);
-
-        y=ones(n,1)-nx;
-        Fy=diag(sqrt(y))*F;
-        Fsquarey=Fsquare.*reshape(y,1,1,n);
-        [~,dGamma1,~] = DDFact_obj_auxiliary(Gamma1,n-s,Fy,Fsquarey);
-        grad1=Gamma1.*dGamma1-y;
-    
-        scaleC=diag(Gamma2)*C;
-        AUX = scaleC*diag(nx)*scaleC';
-        B = - diag(nx) + eye(n);
-        %Compute F(gamma,x)
-        L= AUX+B;
-        L=(L+L')/2; % force symmetry
-        %Compute inv(F(gamma,x))
-        [U,D]=eig(L);
-        lam=diag(D);
-        Finv=U*diag(1./lam)*U';
-        %Compute the residual res
-        grad2=diag(Finv*AUX)-nx;
-    elseif mix_pattern == "DDFact_DDFact_comp"
-        [nbound,nx,info_mix]= obj.mix_DDFact_DDFact_comp(s,Gamma1,Gamma2);
-        Fx=diag(sqrt(x))*F;
-        Fsquarex=Fsquare.*reshape(nx,1,1,n);
-        [~,dGamma1,~] = DDFact_obj_auxiliary(Gamma1,s,Fx,Fsquarex);
-        grad1=Gamma1.*dGamma1-nx;
-    
-        y=ones(n,1)-nx;
-        Fy=diag(sqrt(y))*F;
-        Fsquarey=Fsquare.*reshape(y,1,1,n);
-        [~,dGamma2,~] = DDFact_obj_auxiliary(Gamma2,n-s,Fy,Fsquarey);
-        grad2=Gamma2.*dGamma2-y;
-    end
     alpha=info_mix.alpha;
     ngrad=[(1-alpha)*grad1; alpha*grad2];
     nres= norm(ngrad);
 
-    [U,D]=eig(H);
+    %[U,D]=eig(H);
     % sprintf("nbound:%f, nres:%f, Hessmineig:%f, min(nGamma):%f", nbound, nres,min(diag(D)),min(nGamma))
 
     if nbound-bound>c1*alfa*dir'*grad
@@ -232,61 +139,9 @@ while(k<=Numiterations && gap > TOL && abs(res) > TOL && difgap > TOL)
         nGamma=Gamma.*exp(alfa*dir);
         Gamma1=nGamma(1:n);
         Gamma2=nGamma((n+1):2*n);
-        [nbound,x,info_mix]= mix_func(s,Gamma1,Gamma2);
-        if mix_pattern == "DDFact_Linx"
-            [nbound,nx,info_mix]= obj.mix_DDFact_Linx(s,Gamma1,Gamma2);
-            Fx=diag(sqrt(nx))*F;
-            Fsquarex=Fsquare.*reshape(nx,1,1,n);
-            
-            [~,dGamma1,~] = DDFact_obj_auxiliary(Gamma1,s,Fx,Fsquarex);
-            grad1=Gamma1.*dGamma1-nx;
-        
-            scaleC=diag(Gamma2)*C;
-            AUX = scaleC*diag(nx)*scaleC';
-            B = - diag(nx) + eye(n);
-            %Compute F(gamma,x)
-            L= AUX+B;
-            L=(L+L')/2; % force symmetry
-            %Compute inv(F(gamma,x))
-            [U,D]=eig(L);
-            lam=diag(D);
-            Finv=U*diag(1./lam)*U';
-            %Compute the residual res
-            grad2=diag(Finv*AUX)-nx;
-        elseif mix_pattern == "DDFact_comp_Linx"
-            [nbound,nx,info_mix]= obj.mix_DDFact_comp_Linx(s,Gamma1,Gamma2);
-            y=ones(n,1)-nx;
-            Fy=diag(sqrt(y))*F;
-            Fsquarey=Fsquare.*reshape(y,1,1,n);
-            [~,dGamma1,~] = DDFact_obj_auxiliary(Gamma1,n-s,Fy,Fsquarey);
-            grad1=Gamma1.*dGamma1-y;
-        
-            scaleC=diag(Gamma2)*C;
-            AUX = scaleC*diag(nx)*scaleC';
-            B = - diag(nx) + eye(n);
-            %Compute F(gamma,x)
-            L= AUX+B;
-            L=(L+L')/2; % force symmetry
-            %Compute inv(F(gamma,x))
-            [U,D]=eig(L);
-            lam=diag(D);
-            Finv=U*diag(1./lam)*U';
-            %Compute the residual res
-            grad2=diag(Finv*AUX)-nx;
-        elseif mix_pattern == "DDFact_DDFact_comp"
-            [nbound,nx,info_mix]= obj.mix_DDFact_DDFact_comp(s,Gamma1,Gamma2);
-            
-            Fx=diag(sqrt(x))*F;
-            Fsquarex=Fsquare.*reshape(nx,1,1,n);
-            [~,dGamma1,~] = DDFact_obj_auxiliary(Gamma1,s,Fx,Fsquarex);
-            grad1=Gamma1.*dGamma1-nx;
-        
-            y=ones(n,1)-nx;
-            Fy=diag(sqrt(y))*F;
-            Fsquarey=Fsquare.*reshape(y,1,1,n);
-            [~,dGamma2,~] = DDFact_obj_auxiliary(Gamma2,n-s,Fy,Fsquarey);
-            grad2=Gamma2.*dGamma2-y;
-        end
+
+        mix_BFGS_Gamma_inline_sub;
+
         alpha=info_mix.alpha;
         ngrad=[(1-alpha)*grad1; alpha*grad2];
         nres= norm(ngrad);
@@ -322,9 +177,11 @@ info.absres=abs(res);
 info.difgap=difgap;
 [optbound,optiteration]=min(allbound);
 optGamma=allGamma(:,optiteration);
-[bound1,~,~]= mix_func(s,ones(n,1),ones(n,1));
-if optbound>bound1
-    optbound=bound1;
+Gamma1=ones(n,1);
+Gamma2=ones(n,1);
+mix_BFGS_Gamma_inline_sub;
+if optbound>nbound
+    optbound=nbound;
     optGamma=ones(2*n,1);
 end
 info.optbound=optbound;
