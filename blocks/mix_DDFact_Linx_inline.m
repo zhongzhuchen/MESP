@@ -52,30 +52,77 @@ else
                              'hessopt', 2, 'maxit', 1000, 'xtol', 1e-15, ...
                              'feastol', 1e-10, 'opttol', 1e-10, 'bar_feasible',1,...
                              'bar_maxcrossit', 10);
-    while b-a > 1e-6
-        x0=(xa+xb)/2;
-        if sum(abs(Aeq*x0-beq))>n*1e-10
-            error('The initial point x0 is not feasible.')
+    
+    alpha=1/2;
+    obj_fn = @(x) mix_DDFact_Linx_obj_Knitro(x,C,s,F,Fsquare,Gamma1,Gamma2,alpha);
+    [x,knitro_fval,exitflag,output,lambda,~] = knitro_nlp(obj_fn,x0,A_data,b_data,Aeq,beq,lb,ub,[],[],options);
+    [fval1, dx1, info1] = DDFact_obj_Knitro(x,s,F,Fsquare,Gamma1);
+    [fval2, dx2, info2] = Linx_obj_Knitro(x,C,Gamma2);
+    fval=-knitro_fval;
+    dx=-(1-alpha)*dx1-alpha*dx2;
+    dalpha=-fval2+fval1;
+    % use the proximal gradient method
+    beta=0.5; % shrink parameter for t
+    Tol=1e-8;
+    Numiterations=100;
+    k=0;
+    while true
+        k=k+1;
+        t=1;
+        while true
+            if t<1e-6
+                break;
+            end
+            Gt=1/t*(alpha-max(min(alpha-t*dalpha,1),0));
+            newalpha=alpha-t*Gt;
+            obj_fn = @(x) mix_DDFact_Linx_obj_Knitro(x,C,s,F,Fsquare,Gamma1,Gamma2,newalpha);
+            % warm start
+            [x,knitro_fval,exitflag,output,lambda,~] = knitro_nlp(obj_fn,x,A_data,b_data,Aeq,beq,lb,ub,[],[],options);
+            [fval1, dx1, info1] = DDFact_obj_Knitro(x,s,F,Fsquare,Gamma1);
+            [fval2, dx2, info2] = Linx_obj_Knitro(x,C,Gamma2);
+            newfval=-knitro_fval;
+            newdalpha=-fval2+fval1;
+            if newfval<=fval-t*dalpha'*Gt+t/2*(Gt'*Gt)
+                break
+            end
+            t=beta*t;
         end
-        alpha=(a+b)/2;
-        obj_fn = @(x) mix_DDFact_Linx_obj_Knitro(x,C,s,F,Fsquare,Gamma1,Gamma2,alpha);
-        [x,knitro_fval,exitflag,output,lambda,~] = knitro_nlp(obj_fn,x0,A_data,b_data,Aeq,beq,lb,ub,[],[],options);
-        knitro_fval = - knitro_fval;
-        [fval1, dx1, info1] = DDFact_obj_Knitro(x,s,F,Fsquare,Gamma1);
-        [fval2, dx2, info2] = Linx_obj_Knitro(x,C,Gamma2);
-        fval = -((1-alpha)*fval1+ alpha*fval2);
-        dx = -((1-alpha)*dx1+(alpha)*dx2);
-        dalpha = -fval2 +fval1;
-        if abs(dalpha)<1e-8
+        if k>Numiterations || (Gt'*Gt)<Tol ||fval-newfval<Tol
+            alpha=newalpha;
+            dalpha=newdalpha;
+            fval=newfval;
+            dx=-(1-alpha)*dx1-alpha*dx2;
             break
-        elseif dalpha<0
-            a=alpha;
-            xa=x;
-        else
-            b=alpha;
-            xb=x;
         end
+        alpha=newalpha;
+        dalpha=newdalpha;
+        fval=newfval;
+        dx=-(1-alpha)*dx1-alpha*dx2;
     end
+%     while b-a > 1e-6
+%         x0=(xa+xb)/2;
+%         if sum(abs(Aeq*x0-beq))>n*1e-10
+%             error('The initial point x0 is not feasible.')
+%         end
+%         alpha=(a+b)/2;
+%         obj_fn = @(x) mix_DDFact_Linx_obj_Knitro(x,C,s,F,Fsquare,Gamma1,Gamma2,alpha);
+%         [x,knitro_fval,exitflag,output,lambda,~] = knitro_nlp(obj_fn,x0,A_data,b_data,Aeq,beq,lb,ub,[],[],options);
+%         knitro_fval = - knitro_fval;
+%         [fval1, dx1, info1] = DDFact_obj_Knitro(x,s,F,Fsquare,Gamma1);
+%         [fval2, dx2, info2] = Linx_obj_Knitro(x,C,Gamma2);
+%         fval = -((1-alpha)*fval1+ alpha*fval2);
+%         dx = -((1-alpha)*dx1+(alpha)*dx2);
+%         dalpha = -fval2 +fval1;
+%         if abs(dalpha)<1e-8
+%             break
+%         elseif dalpha<0
+%             a=alpha;
+%             xa=x;
+%         else
+%             b=alpha;
+%             xb=x;
+%         end
+%     end
 end
 time=toc(TStart);
 tEnd=cputime-tStart;

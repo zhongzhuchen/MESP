@@ -1,21 +1,8 @@
-%% obtain class properties
-C=obj.C;
-n = obj.size;
-A_data=obj.A;
-b_data=obj.b;
-[m,~] = size(obj.A);
-F=obj.F;
-Fsquare=obj.Fsquare;
-F_comp=obj.F_comp;
-Fsquare_comp=obj.Fsquare_comp;
-ldetC=obj.ldetC;
+function [fval,x,info] = mix_DDFact_DDFact_comp_light(x0,C,s,F,Fsquare,F_comp,Fsquare_comp,ldetC,A_data,b_data,Gamma1,Gamma2)
+%MIX_DDFACT_DDFACT_COMP_LIGHT Summary of this function goes here
+%   Detailed explanation goes here
+n=length(C);
 info=struct;
-
-%% solve linx and fact bound
-alpha=0;
-% search interval
-a=0;
-b=1;
 TStart=tic;
 tStart=cputime;
 % obtain optimal solution at search boundary a=0, b=1
@@ -110,50 +97,7 @@ info.x=x; % optimal solution
 info.dx=dx;
 info.fval=fval;
 info.alpha = alpha;
-
-% calculate dual solution
-f=[zeros(n,1);ones(n,1);b_data;s];
-Aeq=[-eye(n),eye(n),A_data',ones(n,1)];
-beq=dx;
-lb=[zeros(2*n+m,1);-inf];
-ub=Inf(2*n+m+1,1);
-x0=[];
-options = knitro_options('algorithm',3,...  % active-set/simplex algorithm
-                         'outlev',0);       % iteration display
-[xlp, dualgap, exitflag, ~] = knitro_lp (f, [], [], Aeq, beq, lb, ub, x0, [], options);
-
-info.dual_upsilon = xlp(1:n);
-info.dual_nu = xlp((n+1):2*n);
-info.dual_pi =  xlp((2*n+1):(2*n+m));
-info.dual_tau = xlp(end);
-
-% calculate continuous dualgap
-info.continuous_dualgap=dualgap+(1-alpha)*(info1.cache+sum(x.*log(Gamma1)))+alpha*(info2.cache-sum(x.*log(Gamma2)));
-info.dualbound=info.continuous_dualgap+fval;
 info.time=time;
 info.cputime=tEnd;
-
-%% fixing variables
-info.fixnum=0;
-info.fixnum_to0=0;
-info.fixto0list=[];
-info.fixnum_to1=0;
-info.fixto1list=[];
-
-info.integrality_gap=info.dualbound-obj.obtain_lb(s);
-if info.integrality_gap>1e-6
-    info.solved=0;
-else
-    info.solved=1;
 end
-for i=1:n
-    if info.integrality_gap<info.dual_upsilon(i)-1e-10
-        info.fixnum=info.fixnum+1;
-        info.fixnum_to0=info.fixnum_to0+1;
-        info.fixto0list(end+1)=i;
-    elseif info.integrality_gap<info.dual_nu(i)-1e-10
-        info.fixnum=info.fixnum+1;
-        info.fixnum_to1=info.fixnum_to1+1;
-        info.fixto1list(end+1)=i;
-    end
-end
+
