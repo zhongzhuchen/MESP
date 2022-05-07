@@ -1,14 +1,9 @@
+function  [fval,x,info] = mix_DDFact_DDFact_comp_Linx_light(x0,C,s,...
+    F,Fsquare,F_comp,Fsquare_comp,ldetC,...
+    Gamma1,Gamma2,Gamma3,A_data,b_data)
 %% obtain class properties
-C=obj.C;
-n = obj.size;
-A_data=obj.A;
-b_data=obj.b;
-[m,~] = size(obj.A);
-F=obj.F;
-Fsquare=obj.Fsquare;
-F_comp=obj.F_comp;
-Fsquare_comp=obj.Fsquare_comp;
-ldetC=obj.ldetC;
+n = length(x0);
+m = size(A_data,1);
 info=struct;
 
 TStart=tic;
@@ -35,7 +30,6 @@ alpha=[1,0,0]';
 % directions, (-1,1,0) and (-1,0,1)
 if dalpha(2)-dalpha(1)>=0 && dalpha(3)-dalpha(1)>=0
     optimality_found=1;
-    [~,~,info] = obj.Knitro_DDFact(x0,s,Gamma1);
     info.alpha=[1,0,0]';
 end
 
@@ -45,7 +39,6 @@ if optimality_found ==0
     [fval,dalpha,info_mix] = func_alpha(x0,alpha);
     if dalpha(1)-dalpha(2)>=0 && dalpha(3)-dalpha(2)>=0
         optimality_found=1;
-        [~,~,info] = obj.Knitro_DDFact_comp(x0,s,Gamma2);
         info.alpha=[0,1,0]';
     end
 end
@@ -56,7 +49,6 @@ if optimality_found ==0
     [fval,dalpha,info_mix] = func_alpha(x0,alpha);
     if dalpha(1)-dalpha(3)>=0 && dalpha(2)-dalpha(3)>=0
         optimality_found=1;
-        [~,~,info] = obj.Knitro_Linx(x0,s,Gamma3);
         info.alpha=[0,0,1]';
     end
 end
@@ -108,50 +100,13 @@ if optimality_found ==0
     info.fval=fval;
     info.alpha=alpha;
     
-    f=[zeros(n,1);ones(n,1);b_data;s];
-    Aeq=[-eye(n),eye(n),A_data',ones(n,1)];
-    beq=info.dx;
-    lb=[zeros(2*n+m,1);-inf];
-    ub=Inf(2*n+m+1,1);
-    x0=[];
-    options = knitro_options('algorithm',3,...  % active-set/simplex algorithm
-                             'outlev',0);       % iteration display
-    [xlp, dualgap, exitflag, ~] = knitro_lp (f, [], [], Aeq, beq, lb, ub, x0, [], options);
-    
-    info.dual_upsilon = xlp(1:n);
-    info.dual_nu = xlp((n+1):2*n);
-    info.dual_pi =  xlp((2*n+1):(2*n+m));
-    info.dual_tau = xlp(end);
-
-    info.continuous_dualgap=dualgap+info_mix.cache;
-    info.dualbound=info.continuous_dualgap+info.fval;
-
-    %% fixing variables
-    info.fixnum=0;
-    info.fixnum_to0=0;
-    info.fixto0list=[];
-    info.fixnum_to1=0;
-    info.fixto1list=[];
-    info.integrality_gap=info.dualbound-obj.obtain_lb(s);
-    if info.integrality_gap>1e-6
-        info.solved=0;
-    else
-        info.solved=1;
-    end
-    for i=1:n
-        if info.integrality_gap<info.dual_upsilon(i)-1e-10
-            info.fixnum=info.fixnum+1;
-            info.fixnum_to0=info.fixnum_to0+1;
-            info.fixto0list(end+1)=i;
-        elseif info.integrality_gap<info.dual_nu(i)-1e-10
-            info.fixnum=info.fixnum+1;
-            info.fixnum_to1=info.fixnum_to1+1;
-            info.fixto1list(end+1)=i;
-        end
-    end
 end
-fval=info.fval;
+fval=info_mix.fval;
 x=info_mix.x;
 info.x=x;
 time=toc(TStart);
 tEnd=cputime-tStart;
+info.time=time;
+info.cputime=tEnd;
+end
+

@@ -23,7 +23,11 @@ options = knitro_options('algorithm', 3, 'convex', 1, 'derivcheck', 0, 'outlev',
                          'bar_maxcrossit', 10);
 TStart=tic;
 tStart=cputime;
+try
 [x,knitro_fval,exitflag,output,lambda,~] = knitro_nlp(obj_fn,x0,A,b,Aeq,beq,lb,ub,[],[],options);  
+catch
+    1+1
+end
 time=toc(TStart);
 tEnd=cputime-tStart;
 

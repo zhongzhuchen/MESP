@@ -266,7 +266,7 @@ classdef MESP
             mix_DDFact_DDFact_comp_Linx_inline;
         end
 
-        function [Gamm1,Gamma2,Gamma3,info]=mix_DDFact_DDFact_comp_Linx_BFGS_Gamma(obj,s,Gamma1,Gamma2,Gamma3)
+        function [optgamma,info]=mix_DDFact_DDFact_comp_Linx_BFGS_Gamma(obj,s,gammaInit)
             mix_DDFact_DDFact_comp_Linx_BFGS_Gamma_inline;
         end
     end
