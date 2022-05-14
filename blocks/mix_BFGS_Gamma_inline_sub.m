@@ -1,5 +1,5 @@
 if mix_pattern == "DDFact_Linx"
-    [nbound,nx,info_mix]= obj.mix_DDFact_Linx(nx,s,Gamma1,Gamma2);
+    [nbound,nx,info_mix]= obj.mix_DDFact_Linx(x0,s,Gamma1,Gamma2);
 
     Fx=diag(sqrt(nx))*F;
     Fsquarex=Fsquare.*reshape(nx,1,1,n);
@@ -20,7 +20,7 @@ if mix_pattern == "DDFact_Linx"
     %Compute the residual res
     grad2=diag(Finv*AUX)-nx;
 elseif mix_pattern == "DDFact_comp_Linx"
-    [nbound,nx,info_mix]= obj.mix_DDFact_comp_Linx(nx,s,Gamma1,Gamma2);
+    [nbound,nx,info_mix]= obj.mix_DDFact_comp_Linx(x0,s,Gamma1,Gamma2);
 
     y=ones(n,1)-nx;
     Fy=diag(sqrt(y))*F;
@@ -41,7 +41,7 @@ elseif mix_pattern == "DDFact_comp_Linx"
     %Compute the residual res
     grad2=diag(Finv*AUX)-nx;
 elseif mix_pattern == "DDFact_DDFact_comp"
-    [nbound,nx,info_mix]= obj.mix_DDFact_DDFact_comp(nx,s,Gamma1,Gamma2);
+    [nbound,nx,info_mix]= obj.mix_DDFact_DDFact_comp(x0,s,Gamma1,Gamma2);
     Fx=diag(sqrt(x))*F;
     Fsquarex=Fsquare.*reshape(nx,1,1,n);
     [~,dGamma1,~] = DDFact_obj_auxiliary(Gamma1,s,Fx,Fsquarex);

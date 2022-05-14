@@ -40,7 +40,7 @@ k=1;
 c1=1e-4;
 c2=0.9;
 
-[nbound,nx,info_mix]= func_Gamma(nx,ngamma);
+[nbound,nx,info_mix]= func_Gamma(x0,ngamma);
 alpha=info_mix.alpha;
 
 AUX = C*diag(nx)*C;
@@ -78,7 +78,7 @@ while(k<=Numiterations && gap > TOL && abs(res) > TOL && difgap > TOL)
     %check if alfa=1 satisfies the Strong Wolfe Conditions
     alfa=1;
     ngamma=gamma*exp(alfa*dir);
-    [nbound,nx,info_mix]= func_Gamma(nx,ngamma);
+    [nbound,nx,info_mix]= func_Gamma(x0,ngamma);
     alpha=info_mix.alpha;
     nAUX = C*diag(nx)*C;
     nF=ngamma*nAUX - diag(nx) + eye(n);
@@ -100,7 +100,7 @@ while(k<=Numiterations && gap > TOL && abs(res) > TOL && difgap > TOL)
     while judge==0
         alfa=(a+b)/2;
         ngamma=gamma*exp(alfa*dir);
-        [nbound,nx,info_mix]= func_Gamma(nx,gamma);
+        [nbound,nx,info_mix]= func_Gamma(x0,gamma);
         alpha=info_mix.alpha;
         nAUX = C*diag(nx)*C;
         nF=ngamma*nAUX - diag(nx) + eye(n);

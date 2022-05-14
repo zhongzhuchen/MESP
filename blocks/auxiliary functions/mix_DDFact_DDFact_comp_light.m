@@ -65,7 +65,7 @@ else
             Gt=1/t*(alpha-max(min(alpha-t*dalpha,1),0));
             newalpha=alpha-t*Gt;
             obj_fn = @(x) mix_DDFact_DDFact_comp_obj_Knitro(x,s,F,Fsquare,F_comp,Fsquare_comp,ldetC,Gamma1,Gamma2,newalpha);
-            [x,knitro_fval,exitflag,output,lambda,~] = knitro_nlp(obj_fn,x,A_data,b_data,Aeq,beq,lb,ub,[],[],options);
+            [x,knitro_fval,exitflag,output,lambda,~] = knitro_nlp(obj_fn,x0,A_data,b_data,Aeq,beq,lb,ub,[],[],options);
             [fval1,dx1,info1] = DDFact_obj_Knitro(x,s,F,Fsquare,Gamma1);
             [fval2,dx2,info2] = DDFact_comp_obj_Knitro(x,s,F_comp,Fsquare_comp,ldetC,Gamma2);
             newfval=-knitro_fval;

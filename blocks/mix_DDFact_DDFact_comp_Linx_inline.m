@@ -82,7 +82,7 @@ if optimality_found ==0
             end
             Gt=1/t*(alpha-proj_simplex_vector(alpha-t*dalpha));
             newalpha=alpha-t*Gt;
-            [newfval,newdalpha,newinfo_mix] = func_alpha(nx,newalpha);
+            [newfval,newdalpha,newinfo_mix] = func_alpha(x0,newalpha);
             if newfval<=fval-t*dalpha'*Gt+t/2*(Gt'*Gt)
                 break
             end

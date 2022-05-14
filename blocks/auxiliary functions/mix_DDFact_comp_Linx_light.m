@@ -65,7 +65,7 @@ else
             newalpha=alpha-t*Gt;
             obj_fn = @(x) mix_DDFact_comp_Linx_obj_Knitro(x,C,s,F_comp,Fsquare_comp,ldetC,Gamma1,Gamma2,newalpha);
             % warm start
-            [x,knitro_fval,exitflag,output,lambda,~] = knitro_nlp(obj_fn,x,A_data,b_data,Aeq,beq,lb,ub,[],[],options);
+            [x,knitro_fval,exitflag,output,lambda,~] = knitro_nlp(obj_fn,x0,A_data,b_data,Aeq,beq,lb,ub,[],[],options);
             [fval1, dx1, info1] = DDFact_comp_obj_Knitro(x,s,F_comp,Fsquare_comp,ldetC,Gamma1);
             [fval2, dx2, info2] = Linx_obj_Knitro(x,C,Gamma2);
             newfval=-knitro_fval;
