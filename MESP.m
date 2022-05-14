@@ -240,7 +240,7 @@ classdef MESP
 
     %% optimizing scaling parameter for mixing bound (mix two)
     methods
-        function [Gamma1, Gamma2, info] = mix_BFGS_Gamma(obj,s, mix_pattern, Gamma1Init, Gamma2Init)
+        function [optgamma, info] = mix_BFGS_Gamma(obj,s, mix_pattern, gammaInit)
         %{
         Input:
         s       - the size of subset we want to choose, also equals to the summation of all elements of x

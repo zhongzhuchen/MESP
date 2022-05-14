@@ -38,13 +38,17 @@ else
     ub=ones(n,1);
     Aeq=ones(1,n);
     beq=s;
-    options = knitro_options('algorithm', 3, 'convex', 1, 'derivcheck', 0, 'outlev', 0 , 'gradopt', 1, ...
+    options = knitro_options('algorithm', 0, 'convex', 1, 'derivcheck', 0, 'outlev', 0 , 'gradopt', 1, ...
                              'hessopt', 2, 'maxit', 1000, 'xtol', 1e-15, ...
                              'feastol', 1e-10, 'opttol', 1e-10, 'bar_feasible',1,...
                              'bar_maxcrossit', 10);
     alpha=1/2;
     obj_fn = @(x) mix_DDFact_Linx_obj_Knitro(x,C,s,F,Fsquare,Gamma1,Gamma2,alpha);
+    try
     [x,knitro_fval,exitflag,output,lambda,~] = knitro_nlp(obj_fn,x0,A_data,b_data,Aeq,beq,lb,ub,[],[],options);
+    catch
+        1+1
+    end
     [fval1, dx1, info1] = DDFact_obj_Knitro(x,s,F,Fsquare,Gamma1);
     [fval2, dx2, info2] = Linx_obj_Knitro(x,C,Gamma2);
     fval=-knitro_fval;
@@ -66,7 +70,11 @@ else
             newalpha=alpha-t*Gt;
             obj_fn = @(x) mix_DDFact_Linx_obj_Knitro(x,C,s,F,Fsquare,Gamma1,Gamma2,newalpha);
             % warm start
-            [x,knitro_fval,exitflag,output,lambda,~] = knitro_nlp(obj_fn,x,A_data,b_data,Aeq,beq,lb,ub,[],[],options);
+            try
+            [x,knitro_fval,exitflag,output,lambda,~] = knitro_nlp(obj_fn,x0,A_data,b_data,Aeq,beq,lb,ub,[],[],options);
+            catch
+                pause;
+            end
             [fval1, dx1, info1] = DDFact_obj_Knitro(x,s,F,Fsquare,Gamma1);
             [fval2, dx2, info2] = Linx_obj_Knitro(x,C,Gamma2);
             newfval=-knitro_fval;

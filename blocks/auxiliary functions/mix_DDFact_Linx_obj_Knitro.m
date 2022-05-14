@@ -14,9 +14,19 @@ Output:
 fval    - objective value at current point x
 dx      - the gradient of the obejctive function at x
 %}
-[fval1,dx1] = DDFact_obj_Knitro(x,s,F,Fsquare,Gamma1);
-[fval2,dx2] = Linx_obj_Knitro(x,C,Gamma2);
-fval = (1-alpha)*fval1+ alpha*fval2;
-dx = (1-alpha)*dx1+ alpha*dx2;
+try
+if alpha>1-1e-8
+    [fval,dx] =Linx_obj_Knitro(x,C,Gamma2);
+elseif alpha<1e-8
+    [fval,dx] = DDFact_obj_Knitro(x,s,F,Fsquare,Gamma1);
+else
+    [fval1,dx1] = DDFact_obj_Knitro(x,s,F,Fsquare,Gamma1);
+    [fval2,dx2] = Linx_obj_Knitro(x,C,Gamma2);
+    fval = (1-alpha)*fval1+ alpha*fval2;
+    dx = (1-alpha)*dx1+ alpha*dx2;
+end
+catch
+    pause;
+end
 end
 
